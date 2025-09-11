@@ -8,5 +8,5 @@
         "esModuleInterop": true,
         "skipLibCheck": false
     },
-    "include": ["src"],
+    "include": ["src/**/*"],
 }
