@@ -10,7 +10,7 @@ export function auth(req: Request, res: Response, next: NextFunction) {
     const header = req.headers.authorization || '';
     
     // El token se extrae de forma más segura
-    const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+    const token = header.startsWith('Bearer') ? header.slice(7) : null;
 
     if (!token) {
         return res.status(401).json({ message: "Token is required" });

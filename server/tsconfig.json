@@ -1,12 +1,17 @@
 {
-    "compilerOptions": {
-        "target": "ES2020",
-        "module": "commonjs",
-        "rootDir": "src",
-        "outDir": "dist",
-        "strict": true,
-        "esModuleInterop": true,
-        "skipLibCheck": false
-    },
-    "include": ["src/**/*"],
+  "compilerOptions": {
+    /* Opciones Básicas */
+    "target": "ES2020",                       // Compila a una versión moderna de JavaScript
+    "module": "commonjs",                    // Usa el sistema de módulos estándar de Node.js
+    "outDir": "./dist",                      // Guarda el JavaScript compilado en la carpeta 'dist'
+    "rootDir": "./src",                      // La carpeta raíz de tu código TypeScript
+    "esModuleInterop": true,                 // Permite importar módulos de CommonJS de forma más sencilla
+    "forceConsistentCasingInFileNames": true, // Evita errores de mayúsculas/minúsculas en los nombres de archivo
+
+    /* Chequeo de Tipos Estricto */
+    "strict": true,                          // Activa todas las opciones de chequeo estricto
+    "skipLibCheck": true                     // No revisa los archivos de tipos de las librerías, acelera la compilación
+  },
+  "include": ["src/**/*"],                   // ¡MUY IMPORTANTE! Asegura que lea TODOS los archivos de la carpeta 'src'
+  "exclude": ["node_modules"]
 }
