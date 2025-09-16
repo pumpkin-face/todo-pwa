@@ -23,6 +23,7 @@ export function auth(req: Request, res: Response, next: NextFunction) {
         
         next();
     } catch (e) {
+        console.error("Error verifying token:", e);
         return res.status(401).json({ message: "Token is invalid" });
     }
 }
