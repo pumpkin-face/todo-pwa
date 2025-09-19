@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/server.ts",
-    "start": "node src/server.ts",
+    "dev": "nodemon --exec ts-node --files src/server.ts"
+,    "start": "node src/server.ts",
     "build": "tsc"
   },
   "keywords": [],

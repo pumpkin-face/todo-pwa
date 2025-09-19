@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
-    /* Opciones Básicas */
-    "target": "ES2020",                       // Compila a una versión moderna de JavaScript
-    "module": "commonjs",                    // Usa el sistema de módulos estándar de Node.js
-    "outDir": "./dist",                      // Guarda el JavaScript compilado en la carpeta 'dist'
-    "rootDir": "./src",                      // La carpeta raíz de tu código TypeScript
-    "esModuleInterop": true,                 // Permite importar módulos de CommonJS de forma más sencilla
-    "forceConsistentCasingInFileNames": true, // Evita errores de mayúsculas/minúsculas en los nombres de archivo
-
-    /* Chequeo de Tipos Estricto */
-    "strict": true,                          // Activa todas las opciones de chequeo estricto
-    "skipLibCheck": true                     // No revisa los archivos de tipos de las librerías, acelera la compilación
+    "target": "ES2020",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    
+    // --- LÍNEA AÑADIDA ---
+    // Le decimos a TypeScript que busque tipos en node_modules Y en nuestra carpeta 'src/types'
+    "typeRoots": ["./node_modules/@types", "./src/types"]
   },
-  "include": ["src/**/*"],                   // ¡MUY IMPORTANTE! Asegura que lea TODOS los archivos de la carpeta 'src'
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

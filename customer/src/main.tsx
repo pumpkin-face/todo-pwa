@@ -1,19 +1,36 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+// Tus páginas
 import App from './App.tsx';
 import Login from './page/Login.tsx';
+import Dashboard from './page/Dashboard.tsx';
+
+// Tu componente de rutas privadas
+import PrivateRoutes from './routes/PrivateRoutes.tsx';
+
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        {/* Ruta para la página principal */}
+        {/* --- Rutas Públicas --- */}
         <Route path="/" element={<App />} />
-        
-        {/* Ruta para la página de login */}
         <Route path="/login" element={<Login />} />
+
+        {/* --- Rutas Privadas --- */}
+        <Route element={<PrivateRoutes />}>
+          {/* Todas las rutas aquí adentro estarán protegidas */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          {/* Si tuvieras más rutas, irían aquí: */}
+          {/* <Route path="/profile" element={<Profile />} /> */}
+          {/* <Route path="/settings" element={<Settings />} /> */}
+        </Route>
+        
+        {/* --- Ruta para Páginas no Encontradas (404) --- */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>

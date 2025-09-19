@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Link } from 'react-router-dom';
+import './App.css'; // Importamos nuestros nuevos estilos
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="landing-page container">
+      <header className="navbar">
+        <div className="logo">Todo-PWA</div>
+        <nav>
+          <Link to="/login" className="btn btn-secondary">
+            Iniciar Sesión
+          </Link>
+        </nav>
+      </header>
+
+      <main className="hero">
+        <div className="hero-content">
+          <h1 className="hero-title">Organiza tu vida, una tarea a la vez.</h1>
+          <p className="hero-subtitle">
+            Todo-PWA es tu asistente personal para gestionar tareas de forma simple, 
+            rápida y accesible desde cualquier dispositivo.
+          </p>
+          <Link to="/login" className="btn btn-primary">
+            Comenzar Ahora
+          </Link>
+        </div>
+      </main>
+
+      <footer className="footer">
+        <p>&copy; 2025 Todo-PWA. Creado por David SF.</p>
+      </footer>
+    </div>
+  );
 }
 
-export default App
+export default App;

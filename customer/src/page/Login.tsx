@@ -37,36 +37,40 @@ export default function Login() {
     }
 
     return (
-        <form onSubmit={onSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '400px', margin: 'auto' }}>
-            <h2>Login</h2>
-            
-            <label htmlFor="email">Email:</label>
-            <input 
-                id="email"
-                type="email" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                placeholder="tu@email.com"
-                required
-                disabled={loading}
-            />
-            
-            <label htmlFor="password">Password:</label>
-            <input 
-                id="password"
-                type="password" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                placeholder="Password"
-                required
-                disabled={loading}
-            />
-
-            <button type="submit" disabled={loading}>
-                {loading ? 'Entering...' : 'Enter'}
-            </button>
-            
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-        </form>
+        <div className="login-container container">
+            <div className="login-box">
+                <h1>Login</h1>
+                <form onSubmit={onSubmit}>
+                    <div className="input-group">
+                        <label htmlFor="email">Email:</label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="tu@email.com"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label htmlFor="password">Password:</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Password"
+                            required
+                            disabled={loading}
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                        {loading ? 'Entering...' : 'Enter'}
+                    </button>
+                    {error && <p className="error-message">{error}</p>}
+                </form>
+            </div>
+        </div>
     );
 }

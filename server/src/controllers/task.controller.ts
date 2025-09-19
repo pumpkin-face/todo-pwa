@@ -1,17 +1,20 @@
 import { Request, Response } from "express";
 import Task, { ITask } from '../models/Task';
 
-// --- Definición de Interfaces para Tipado Fuerte ---
+// --- Definición de Interfaces ---
 
-// Define la forma del cuerpo (body) para crear una tarea
+// 1. Añadimos la interfaz personalizada para peticiones autenticadas
+interface AuthRequest extends Request {
+    userId?: string;
+}
+
 interface CreateTaskBody {
     title: string;
     description?: string;
-    status?: ITask['status']; // Usa el tipo del modelo para consistencia
+    status?: ITask['status'];
     clientID?: string;
 }
 
-// Define la forma del cuerpo (body) para la sincronización masiva
 interface BulkSyncBody {
     tasks: Array<{
         clientID: string;
@@ -21,15 +24,12 @@ interface BulkSyncBody {
     }>;
 }
 
-// Define los estados permitidos
 const allowedStatus = ['Pending', 'In Progress', 'Completed'];
 
 // --- Controladores CRUD ---
 
-/**
- * @description Lista todas las tareas no eliminadas de un usuario
- */
-export async function list(req: Request, res: Response) {
+// 2. Aplicamos AuthRequest a TODAS las funciones de este archivo
+export async function list(req: AuthRequest, res: Response) {
     try {
         const tasks = await Task.find({ user: req.userId, deleted: false }).sort({ createdAt: -1 });
         return res.json(tasks);
@@ -39,10 +39,7 @@ export async function list(req: Request, res: Response) {
     }
 }
 
-/**
- * @description Obtiene una única tarea por su ID
- */
-export async function getOne(req: Request, res: Response) {
+export async function getOne(req: AuthRequest, res: Response) {
     try {
         const { id } = req.params;
         const task = await Task.findOne({ _id: id, user: req.userId, deleted: false });
@@ -57,10 +54,7 @@ export async function getOne(req: Request, res: Response) {
     }
 }
 
-/**
- * @description Crea una nueva tarea
- */
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthRequest, res: Response) {
     try {
         const { title, description, status, clientID } = req.body as CreateTaskBody;
 
@@ -82,10 +76,7 @@ export async function create(req: Request, res: Response) {
     }
 }
 
-/**
- * @description Actualiza una tarea existente
- */
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthRequest, res: Response) {
     try {
         const { id } = req.params;
         const { title, description, status } = req.body;
@@ -110,10 +101,7 @@ export async function update(req: Request, res: Response) {
     }
 }
 
-/**
- * @description Elimina una tarea (Borrado Lógico)
- */
-export async function destroy(req: Request, res: Response) {
+export async function destroy(req: AuthRequest, res: Response) {
     try {
         const { id } = req.params;
         const task = await Task.findOneAndUpdate(
@@ -125,17 +113,14 @@ export async function destroy(req: Request, res: Response) {
             return res.status(404).json({ message: 'Task not found or you do not have permission' });
         }
 
-        return res.sendStatus(204); // 204: No Content (éxito sin devolver cuerpo)
+        return res.sendStatus(204);
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: "Server error deleting task" });
     }
 }
 
-/**
- * @description Sincroniza un lote de tareas desde el cliente
- */
-export async function bulksync(req: Request, res: Response) {
+export async function bulksync(req: AuthRequest, res: Response) {
     try {
         const { tasks }: BulkSyncBody = req.body;
         const mapping = [];
@@ -146,7 +131,6 @@ export async function bulksync(req: Request, res: Response) {
             const doc = await Task.findOne({ user: req.userId, clientID: item.clientID });
 
             if (!doc) {
-                // --- CREAR ---
                 const newDoc = await Task.create({
                     user: req.userId,
                     title: item.title,
@@ -154,18 +138,15 @@ export async function bulksync(req: Request, res: Response) {
                     status: item.status && allowedStatus.includes(item.status) ? item.status : 'Pending',
                     clientID: item.clientID
                 });
-                // AQUÍ LA CORRECCIÓN FINAL
                 mapping.push({ clientID: item.clientID, serverID: (newDoc as any)._id.toString() });
 
             } else {
-                // --- ACTUALIZAR ---
                 doc.title = item.title ?? doc.title;
                 doc.description = item.description ?? doc.description;
                 if (item.status && allowedStatus.includes(item.status)) {
                     doc.status = item.status;
                 }
                 await doc.save();
-                // AQUÍ LA CORRECCIÓN FINAL
                 mapping.push({ clientID: item.clientID, serverID: (doc as any)._id.toString() });
             }
         }
