@@ -3,7 +3,14 @@ import User from "../models/User";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+// --- 1. Definimos una interfaz personalizada que extiende la original de Express ---
+// Esto le enseña a TypeScript qué es la propiedad 'userId' en el objeto Request.
+interface AuthRequest extends Request {
+  userId?: string;
+}
+
 // --- Controlador para Registrar un Nuevo Usuario ---
+// Esta función usa el 'Request' estándar porque no necesita autenticación.
 export async function register(req: Request, res: Response) {
     try {
         const { name, email, password } = req.body;
@@ -53,6 +60,7 @@ export async function register(req: Request, res: Response) {
 
 
 // --- Controlador para Iniciar Sesión ---
+// Esta función también usa el 'Request' estándar.
 export async function login(req: Request, res: Response) {
     try {
         const { email, password } = req.body;
@@ -91,7 +99,9 @@ export async function login(req: Request, res: Response) {
 }
 
 // --- Controlador para Obtener el Perfil del Usuario ---
-export async function profile(req: Request, res: Response) {
+// --- 2. Aplicamos nuestra interfaz personalizada 'AuthRequest' ---
+// Ahora TypeScript sabe que 'req' puede tener la propiedad 'userId'.
+export async function profile(req: AuthRequest, res: Response) {
     try {
         // 1. Busca al usuario usando el ID que viene del middleware de autenticación
         const user = await User.findById(req.userId).select("_id name email");

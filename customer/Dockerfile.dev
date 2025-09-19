@@ -1,0 +1,20 @@
+# Usamos la imagen completa de Node que incluye Vite
+FROM node:20
+
+# Establecemos el directorio de trabajo
+WORKDIR /app
+
+# Copiamos package.json para instalar dependencias
+COPY package*.json ./
+
+# Instalamos TODAS las dependencias
+RUN npm install
+
+# Copiamos el resto del código
+COPY . .
+
+# Exponemos el puerto de Vite
+EXPOSE 5173
+
+# El comando por defecto se manejará desde docker-compose.yml
+CMD [ "npm", "run", "dev" ]

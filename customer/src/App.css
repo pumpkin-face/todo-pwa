@@ -1,42 +1,170 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+:root {
+  --primary-color: #FF007F; /* Rosa Fosforescente */
+  --background-color: #121212; /* Negro/Gris muy oscuro */
+  --text-color: #F0F0F0; /* Blanco roto */
+  --text-secondary-color: #a0a0a0;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   text-align: center;
 }
 
+/* --- Barra de Navegación --- */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 0;
+  width: 100%;
+}
+
 .logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* --- Estilos de Botones --- */
+.btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 15px rgba(255, 0, 127, 0.4);
 }
 
-.card {
-  padding: 2em;
+.btn-primary:hover {
+  background-color: #fff;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 20px rgba(255, 0, 127, 0.6);
 }
 
-.read-the-docs {
-  color: #888;
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 2px solid #555;
+}
+
+.btn-secondary:hover {
+  background-color: var(--text-color);
+  color: var(--background-color);
+}
+
+/* --- Sección Principal (Hero) --- */
+.hero {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-content {
+  max-width: 2800px;
+}
+
+.hero-title {
+  font-size: 4rem;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  background: -webkit-linear-gradient(45deg, #FF007F, #a759f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  margin-bottom: 40px;
+  color: var(--text-secondary-color);
+}
+
+/* --- Pie de Página --- */
+.footer {
+  padding: 40px 0;
+  color: #666;
+}
+
+/* --- Contenedor Principal Reutilizable --- */
+.container {
+  width: 10%;
+  max-width: 2800px; /* Ancho máximo del contenido */
+  margin: 0 auto;    /* Centra el contenedor horizontalmente */
+  padding: 0 20px;   /* Espacio a los lados en pantallas pequeñas */
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+}
+
+/* --- Estilos para la Página de Login --- */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1; /* Ocupa el espacio vertical disponible */
+}
+
+.login-box {
+  background-color: #1a1a1a; /* Un gris un poco más claro que el fondo */
+  padding: 40px;
+  border-radius: 12px;
+  border: 1px solid #333;
+  width: 100%;
+  max-width: 1800px;
+  text-align: left; /* Alinea el texto a la izquierda dentro de la caja */
+}
+
+.login-box h1 {
+  text-align: center; /* Centra solo el título 'Login' */
+  margin-top: 0;
+  margin-bottom: 30px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: var(--text-secondary-color);
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: var(--text-color);
+  font-size: 1rem;
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+}
+
+/* Centra el botón de login */
+.login-box .btn-primary {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.1rem;
+}
+
+.error-message {
+  color: #ff4d4d;
+  text-align: center;
+  margin-top: 20px;
 }

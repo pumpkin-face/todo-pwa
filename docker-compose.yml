@@ -1,31 +1,39 @@
 services:
-  # Servicio del Backend (API)
   server:
-    build: ./server
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
     container_name: todo-pwa-api
     restart: unless-stopped
     env_file:
-      - ./.env # Carga las variables desde el archivo .env
+      - ./.env
     ports:
-      # Exponemos el puerto 5000 para poder probar la API directamente si queremos
       - "5000:5000"
     networks:
       - app-network
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    # El comando se puede quitar, ya que está en el Dockerfile.dev
+    # command: npm run dev 
 
-  # Servicio del Frontend (Cliente)
   customer:
-    build: ./customer
+    build:
+      context: ./customer
+      dockerfile: Dockerfile.dev
     container_name: todo-pwa-client
-    restart: unless-stopped
     ports:
-      # Mapeamos el puerto 80 del contenedor al puerto 80 de nuestra máquina
-      - "80:80"
+      - "5173:5173"
     networks:
       - app-network
     depends_on:
-      - server # Le decimos que espere a que el backend inicie
+      - server
+    volumes:
+      - ./customer:/app
+      - /app/node_modules
+    # El comando se puede quitar, ya que está en el Dockerfile.dev
+    # command: npm run dev
 
-# Docker creará una red para que los contenedores se comuniquen por su nombre
 networks:
   app-network:
     driver: bridge
