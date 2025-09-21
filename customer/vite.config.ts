@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     // Escucha en todas las interfaces de red para que Docker funcione
     host: '0.0.0.0',
-    port: 5173,
+    port: 3000,
     // --- SECCIÓN DEL PROXY ---
     // Esto redirigirá las peticiones del frontend al backend
     proxy: {

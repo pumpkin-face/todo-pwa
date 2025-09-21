@@ -14,7 +14,7 @@ RUN npm install
 COPY . .
 
 # Exponemos el puerto de Vite
-EXPOSE 5173
+EXPOSE 3000
 
 # El comando por defecto se manejará desde docker-compose.yml
 CMD [ "npm", "run", "dev" ]
