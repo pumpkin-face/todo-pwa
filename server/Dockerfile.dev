@@ -1,13 +1,13 @@
-# Usamos la imagen completa de Node para tener todas las herramientas
+# Usamos la imagen completa de Node
 FROM node:20
 
 # Establecemos el directorio de trabajo
 WORKDIR /app
 
-# Copiamos package.json para instalar dependencias
+# Copiamos solo los package.json para aprovechar la caché de Docker
 COPY package*.json ./
 
-# Instalamos TODAS las dependencias, incluyendo las de desarrollo
+# Instalamos las dependencias
 RUN npm install
 
 # Copiamos el resto del código
@@ -16,7 +16,5 @@ COPY . .
 # Exponemos el puerto
 EXPOSE 5000
 
-# El comando por defecto se manejará desde docker-compose.yml
-# Usamos npx para asegurarnos de que se ejecute la versión de nodemon
-# instalada en node_modules, solucionando problemas de PATH.
-CMD [ "npx", "nodemon", "src/server.ts" ]
+# Comando final y robusto que se ejecuta al iniciar
+CMD ["npm", "run", "dev"]

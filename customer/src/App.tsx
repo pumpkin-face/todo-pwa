@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import './App.css'; // Importamos nuestros nuevos estilos
+import './App.css';
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
         <div className="hero-content">
           <h1 className="hero-title">Organiza tu vida, una tarea a la vez.</h1>
           <p className="hero-subtitle">
-            Todo-PWA es tu asistente personal para gestionar tareas de forma simple, 
+            Todo-PWA es tu asistente personal para gestionar tareas de forma simple,
             rápida y accesible desde cualquier dispositivo.
           </p>
           <Link to="/login" className="btn btn-primary">
