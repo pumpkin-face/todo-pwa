@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile.dev # Usa el Dockerfile de desarrollo
     container_name: todo-pwa-client-dev
     ports:
-      - "5173:5173" # Vite corre en el puerto 5173
+      - "3000:3000" # Vite corre en el puerto 5173
     networks:
       - app-network
     depends_on:
