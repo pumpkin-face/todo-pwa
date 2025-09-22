@@ -3,30 +3,32 @@ import { useNavigate } from "react-router-dom";
 import { api, setAuth } from '../api';
 import './Dashboard.css';
 
+// 1. El tipo 'Task' ahora incluye la descripción
 type Task = {
     _id: string;
     title: string;
+    description: string;
     status: 'Pending' | 'Completed';
 };
 
 type FilterStatus = 'all' | 'Completed' | 'Pending';
 
 export default function Dashboard() {
+    // --- Estados del Componente ---
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [newTaskTitle, setNewTaskTitle] = useState('');
+    // 2. Estado unificado para la nueva tarea
+    const [newTask, setNewTask] = useState({ title: '', description: '' });
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<FilterStatus>('all');
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    // --- Lógica de Datos (sin cambios) ---
     const fetchTasks = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
+            if (!token) { navigate('/login'); return; }
             setAuth(token);
             const { data } = await api.get('/tasks');
             setTasks(data);
@@ -44,24 +46,29 @@ export default function Dashboard() {
     const filteredTasks = useMemo(() => {
         return tasks
             .filter(task => filter === 'all' || task.status === filter)
-            .filter(task => task.title.toLowerCase().includes(search.toLowerCase()));
+            .filter(task => 
+                task.title.toLowerCase().includes(search.toLowerCase()) ||
+                task.description.toLowerCase().includes(search.toLowerCase())
+            );
     }, [tasks, search, filter]);
 
     function handleFilterChange(e: ChangeEvent<HTMLSelectElement>) {
         setFilter(e.target.value as FilterStatus);
     }
     
+    // --- Funciones CRUD (actualizadas para incluir descripción) ---
     async function addTask(e: FormEvent) {
         e.preventDefault();
-        const title = newTaskTitle.trim();
-        if (!title) return;
+        const { title, description } = newTask;
+        if (!title.trim()) return;
 
-        const optimisticTask: Task = { _id: `temp-${Date.now()}`, title, status: 'Pending' };
+        const optimisticTask: Task = { _id: `temp-${Date.now()}`, title: title.trim(), description: description.trim(), status: 'Pending' };
         setTasks(prev => [optimisticTask, ...prev]);
-        setNewTaskTitle('');
+        setNewTask({ title: '', description: '' }); // Limpiamos ambos campos
 
         try {
-            await api.post('/tasks', { title });
+            // 3. Enviamos ambos campos al backend
+            await api.post('/tasks', { title: title.trim(), description: description.trim() });
             await fetchTasks();
         } catch (error) {
             console.error("Failed to add task", error);
@@ -73,7 +80,6 @@ export default function Dashboard() {
         const newStatus = task.status === 'Pending' ? 'Completed' : 'Pending';
         const originalTasks = tasks;
         setTasks(prev => prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
-
         try {
             await api.put(`/tasks/${task._id}`, { status: newStatus });
         } catch (error) {
@@ -85,7 +91,6 @@ export default function Dashboard() {
     async function deleteTask(id: string) {
         const originalTasks = tasks;
         setTasks(prev => prev.filter(t => t._id !== id));
-
         try {
             await api.delete(`/tasks/${id}`);
         } catch (error) {
@@ -94,14 +99,9 @@ export default function Dashboard() {
         }
     }
 
-    // --- FUNCIÓN CORREGIDA ---
     async function saveEdit(e: FormEvent) {
         e.preventDefault();
-
-        // Type Guard: nos aseguramos de que editingTask no sea null
         if (!editingTask) return;
-
-        // Ahora podemos usar editingTask.title de forma segura
         if (!editingTask.title.trim()) {
             setEditingTask(null);
             return;
@@ -114,9 +114,12 @@ export default function Dashboard() {
         setEditingTask(null);
 
         try {
-            await api.put(`/tasks/${taskToUpdate._id}`, { title: taskToUpdate.title.trim() });
-        } catch (error)
-        {
+            // 4. Enviamos ambos campos al backend al actualizar
+            await api.put(`/tasks/${taskToUpdate._id}`, { 
+                title: taskToUpdate.title.trim(),
+                description: taskToUpdate.description.trim()
+            });
+        } catch (error) {
             console.error("Failed to save task", error);
             setTasks(originalTasks);
         }
@@ -128,6 +131,7 @@ export default function Dashboard() {
         navigate('/login');
     }
 
+    // --- Renderizado del Componente (actualizado) ---
     return (
         <div className="dashboard-container container">
             <header className="dashboard-header">
@@ -135,11 +139,18 @@ export default function Dashboard() {
                 <button onClick={handleLogout} className="btn btn-secondary">Cerrar Sesión</button>
             </header>
 
-            <form onSubmit={addTask} className="task-controls">
+            {/* 5. Formulario de creación con ambos campos */}
+            <form onSubmit={addTask} className="task-controls add-task-form">
                 <input
-                    value={newTaskTitle}
-                    onChange={e => setNewTaskTitle(e.target.value)}
-                    placeholder="¿Qué necesitas hacer?"
+                    value={newTask.title}
+                    onChange={e => setNewTask({ ...newTask, title: e.target.value })}
+                    placeholder="Título de la nueva tarea"
+                    disabled={loading}
+                />
+                <input
+                    value={newTask.description}
+                    onChange={e => setNewTask({ ...newTask, description: e.target.value })}
+                    placeholder="Descripción (opcional)"
                     disabled={loading}
                 />
                 <button type="submit" className="btn btn-primary">Añadir Tarea</button>
@@ -149,7 +160,7 @@ export default function Dashboard() {
                 <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder="Buscar tareas..."
+                    placeholder="Buscar en título o descripción..."
                 />
                 <select value={filter} onChange={handleFilterChange}>
                     <option value="all">Todas</option>
@@ -163,16 +174,24 @@ export default function Dashboard() {
                     {filteredTasks.length > 0 ? filteredTasks.map(task => (
                         <div key={task._id} className={`task-item ${task.status === 'Completed' ? 'completed' : ''}`}>
                             {editingTask?._id === task._id ? (
+                                // 6. Formulario de edición con ambos campos
                                 <form onSubmit={saveEdit} className="task-form-edit">
                                     <input
                                         value={editingTask.title}
                                         onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
                                         className="task-input-edit"
                                         autoFocus
-                                        onBlur={() => setEditingTask(null)}
                                     />
-                                    <button type="submit" className="btn btn-primary">Guardar</button>
-                                    <button type="button" onClick={() => setEditingTask(null)} className="btn btn-secondary">Cancelar</button>
+                                    <textarea
+                                        value={editingTask.description}
+                                        onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
+                                        className="task-input-edit"
+                                        placeholder="Descripción"
+                                    />
+                                    <div className="task-actions">
+                                        <button type="submit" className="btn btn-primary">Guardar</button>
+                                        <button type="button" onClick={() => setEditingTask(null)} className="btn btn-secondary">Cancelar</button>
+                                    </div>
                                 </form>
                             ) : (
                                 <>
@@ -182,7 +201,11 @@ export default function Dashboard() {
                                             checked={task.status === 'Completed'}
                                             onChange={() => toggleTaskStatus(task)}
                                         />
-                                        <h2 className="task-title">{task.title}</h2>
+                                        <div>
+                                            {/* 7. Mostramos título y descripción */}
+                                            <h2 className="task-title">{task.title}</h2>
+                                            <p className="task-description">{task.description}</p>
+                                        </div>
                                     </div>
                                     <div className="task-actions">
                                         <button onClick={() => setEditingTask(task)} className="btn btn-secondary">Editar</button>
