@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import axios from 'axios';
 import { api, setAuth } from "../api";
 
@@ -10,6 +10,8 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/dashboard";
 
     async function onSubmit(e: FormEvent) {
         e.preventDefault();
@@ -21,12 +23,11 @@ export default function Login() {
 
             localStorage.setItem('token', data.token);
             setAuth(data.token);
-            navigate('/');
+            
+            navigate(from, { replace: true });
 
         } catch (err) {
             let message = 'An unexpected error occurred.';
-
-            // Verificamos si es un error de Axios de forma segura
             if (axios.isAxiosError(err)) {
                 message = err.response?.data?.message || 'Error trying to login.';
             }
@@ -37,39 +38,49 @@ export default function Login() {
     }
 
     return (
-        <div className="login-container container">
-            <div className="login-box">
-                <h1>Login</h1>
-                <form onSubmit={onSubmit}>
-                    <div className="input-group">
-                        <label htmlFor="email">Email:</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="tu@email.com"
-                            required
-                            disabled={loading}
-                        />
+        <div className="container">
+            <div className="login-container">
+                <div className="login-box">
+                    <h1>Login</h1>
+                    <form onSubmit={onSubmit}>
+                        <div className="input-group">
+                            <label htmlFor="email">Correo electronico:</label>
+                            <input
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="tu@email.com"
+                                required
+                                disabled={loading}
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label htmlFor="password">Contraseña:</label>
+                            <input
+                                type="password"
+                                id="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Contraseña"
+                                required
+                                disabled={loading}
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary" disabled={loading}>
+                            {loading ? 'Entering...' : 'Enter'}
+                        </button>
+                        {error && <p className="error-message">{error}</p>}
+                    </form>
+                    <div style={{ textAlign: 'center', marginTop: '25px', lineHeight: '1.6' }}>
+                        <p style={{ margin: 0 }}>
+                            ¿No tienes una cuenta? <Link to="/register" style={{ color: 'var(--primary-color)' }}>Regístrate</Link>
+                        </p>
+                        <p style={{ margin: 0 }}>
+                            ¿Deseas regresar al inicio? <Link to="/" style={{ color: 'var(--primary-color)' }}>Inicio</Link>
+                        </p>
                     </div>
-                    <div className="input-group">
-                        <label htmlFor="password">Password:</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Password"
-                            required
-                            disabled={loading}
-                        />
-                    </div>
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? 'Entering...' : 'Enter'}
-                    </button>
-                    {error && <p className="error-message">{error}</p>}
-                </form>
+                </div>
             </div>
         </div>
     );

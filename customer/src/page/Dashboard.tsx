@@ -1,34 +1,33 @@
-import { useEffect, useMemo, useState, type FormEvent, useCallback } from "react";
+import { useEffect, useMemo, useState, type FormEvent, useCallback, type ChangeEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, setAuth } from '../api';
+import './Dashboard.css';
 
-// Definimos la "forma" de una tarea para que coincida con nuestro backend
 type Task = {
     _id: string;
     title: string;
-    description: string;
-    status: 'Pending' | 'In Progress' | 'Completed';
-    createdAt: string;
+    status: 'Pending' | 'Completed';
 };
 
+type FilterStatus = 'all' | 'Completed' | 'Pending';
+
 export default function Dashboard() {
-    // --- Estados del Componente ---
-    const [loading, setLoading] = useState(true);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [search, setSearch] = useState('');
-    const [filter, setFilter] = useState<'all' | 'Completed' | 'Pending'>('all');
-    
-    // Estados para la edición en línea de una tarea
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [editingTitle, setEditingTitle] = useState('');
-    
+    const [filter, setFilter] = useState<FilterStatus>('all');
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    // --- Carga Inicial de Datos ---
-    const loadTasks = useCallback(async () => {
-        setLoading(true);
+    const fetchTasks = useCallback(async () => {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+            setAuth(token);
             const { data } = await api.get('/tasks');
             setTasks(data);
         } catch (error) {
@@ -36,186 +35,169 @@ export default function Dashboard() {
         } finally {
             setLoading(false);
         }
-    }, []); // useCallback con [] asegura que esta función no se recree en cada render
+    }, [navigate]);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            setAuth(token);
-            loadTasks();
-        } else {
-            navigate('/login');
-        }
-    }, [loadTasks, navigate]);
+        fetchTasks();
+    }, [fetchTasks]);
 
-    // --- Lógica de Filtrado y Búsqueda ---
     const filteredTasks = useMemo(() => {
         return tasks
-            .filter(task => {
-                if (filter === 'all') return true;
-                return task.status === filter;
-            })
-            .filter(task => 
-                task.title.toLowerCase().includes(search.toLowerCase())
-            );
-    }, [tasks, search, filter]); // Se recalcula solo si estas dependencias cambian
+            .filter(task => filter === 'all' || task.status === filter)
+            .filter(task => task.title.toLowerCase().includes(search.toLowerCase()));
+    }, [tasks, search, filter]);
 
-    // --- Funciones CRUD (Create, Read, Update, Delete) ---
-
+    function handleFilterChange(e: ChangeEvent<HTMLSelectElement>) {
+        setFilter(e.target.value as FilterStatus);
+    }
+    
     async function addTask(e: FormEvent) {
         e.preventDefault();
         const title = newTaskTitle.trim();
         if (!title) return;
 
+        const optimisticTask: Task = { _id: `temp-${Date.now()}`, title, status: 'Pending' };
+        setTasks(prev => [optimisticTask, ...prev]);
+        setNewTaskTitle('');
+
         try {
-            const { data: newTask } = await api.post('/tasks', { title });
-            setTasks([newTask, ...tasks]); // Añade la nueva tarea al inicio del array
-            setNewTaskTitle('');
+            await api.post('/tasks', { title });
+            await fetchTasks();
         } catch (error) {
             console.error("Failed to add task", error);
+            setTasks(prev => prev.filter(t => t._id !== optimisticTask._id));
         }
     }
 
     async function toggleTaskStatus(task: Task) {
-        const oldTasks = tasks;
         const newStatus = task.status === 'Pending' ? 'Completed' : 'Pending';
-        const updatedTask: Task = { ...task, status: newStatus };
-
-        // Actualización optimista: la UI cambia al instante
-        setTasks(prev => prev.map(t => t._id === task._id ? updatedTask : t));
+        const originalTasks = tasks;
+        setTasks(prev => prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
 
         try {
             await api.put(`/tasks/${task._id}`, { status: newStatus });
         } catch (error) {
             console.error("Failed to toggle task status", error);
-            setTasks(oldTasks); // Revertir en caso de error en el backend
+            setTasks(originalTasks);
         }
     }
 
     async function deleteTask(id: string) {
-        const oldTasks = tasks;
-        setTasks(prev => prev.filter(t => t._id !== id)); // Actualización optimista
+        const originalTasks = tasks;
+        setTasks(prev => prev.filter(t => t._id !== id));
 
         try {
             await api.delete(`/tasks/${id}`);
         } catch (error) {
             console.error("Failed to delete task", error);
-            setTasks(oldTasks); // Revertir en caso de error
+            setTasks(originalTasks);
         }
     }
 
-    // --- Funciones de Edición ---
-
-    function startEdit(task: Task) {
-        setEditingId(task._id);
-        setEditingTitle(task.title);
-    }
-
-    function cancelEdit() {
-        setEditingId(null);
-        setEditingTitle('');
-    }
-
+    // --- FUNCIÓN CORREGIDA ---
     async function saveEdit(e: FormEvent) {
         e.preventDefault();
-        if (!editingId || !editingTitle.trim()) return;
 
-        const oldTasks = tasks;
-        const originalTask = tasks.find(t => t._id === editingId);
-        if (!originalTask) return;
+        // Type Guard: nos aseguramos de que editingTask no sea null
+        if (!editingTask) return;
+
+        // Ahora podemos usar editingTask.title de forma segura
+        if (!editingTask.title.trim()) {
+            setEditingTask(null);
+            return;
+        }
+
+        const originalTasks = tasks;
+        const taskToUpdate = editingTask;
         
-        const updatedTask: Task = { ...originalTask, title: editingTitle.trim() };
-        
-        setTasks(prev => prev.map(t => t._id === editingId ? updatedTask : t));
-        cancelEdit(); // Salir del modo edición inmediatamente
+        setTasks(prev => prev.map(t => t._id === taskToUpdate._id ? taskToUpdate : t));
+        setEditingTask(null);
 
         try {
-            await api.put(`/tasks/${editingId}`, { title: editingTitle.trim() });
-        } catch (error) {
+            await api.put(`/tasks/${taskToUpdate._id}`, { title: taskToUpdate.title.trim() });
+        } catch (error)
+        {
             console.error("Failed to save task", error);
-            setTasks(oldTasks); // Revertir en caso de error
+            setTasks(originalTasks);
         }
     }
-    
-    // --- Cierre de Sesión ---
+
     function handleLogout() {
         localStorage.removeItem('token');
         setAuth(null);
         navigate('/login');
     }
 
-    // --- Renderizado del Componente ---
-    if (loading) return <p>Loading tasks...</p>;
-
     return (
-        <div>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1>Task Dashboard</h1>
-                <button onClick={handleLogout}>Logout</button>
+        <div className="dashboard-container container">
+            <header className="dashboard-header">
+                <h1>Mis Tareas</h1>
+                <button onClick={handleLogout} className="btn btn-secondary">Cerrar Sesión</button>
             </header>
 
-            <section>
-                <h3>Add New Task</h3>
-                <form onSubmit={addTask}>
-                    <input 
-                        value={newTaskTitle}
-                        onChange={e => setNewTaskTitle(e.target.value)}
-                        placeholder="What needs to be done?"
-                    />
-                    <button type="submit">Add Task</button>
-                </form>
-            </section>
+            <form onSubmit={addTask} className="task-controls">
+                <input
+                    value={newTaskTitle}
+                    onChange={e => setNewTaskTitle(e.target.value)}
+                    placeholder="¿Qué necesitas hacer?"
+                    disabled={loading}
+                />
+                <button type="submit" className="btn btn-primary">Añadir Tarea</button>
+            </form>
 
-            <section>
-                <h3>Filter & Search</h3>
-                <input 
+            <div className="task-controls">
+                <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
-                    placeholder="Search tasks..."
+                    placeholder="Buscar tareas..."
                 />
-                <select 
-                    value={filter} 
-                    onChange={e => setFilter(e.target.value as 'all' | 'Completed' | 'Pending')}
-                >
-                    <option value="all">All</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Completed">Completed</option>
+                <select value={filter} onChange={handleFilterChange}>
+                    <option value="all">Todas</option>
+                    <option value="Pending">Pendientes</option>
+                    <option value="Completed">Completadas</option>
                 </select>
-            </section>
-
-            <section>
-                <h3>My Tasks</h3>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {filteredTasks.map(task => (
-                        <li key={task._id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {editingId === task._id ? (
-                                <form onSubmit={saveEdit} style={{ display: 'flex', gap: '5px' }}>
-                                    <input 
-                                        value={editingTitle}
-                                        onChange={e => setEditingTitle(e.target.value)}
+            </div>
+            
+            {loading ? <p>Cargando tareas...</p> : (
+                <div className="task-list">
+                    {filteredTasks.length > 0 ? filteredTasks.map(task => (
+                        <div key={task._id} className={`task-item ${task.status === 'Completed' ? 'completed' : ''}`}>
+                            {editingTask?._id === task._id ? (
+                                <form onSubmit={saveEdit} className="task-form-edit">
+                                    <input
+                                        value={editingTask.title}
+                                        onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
+                                        className="task-input-edit"
                                         autoFocus
+                                        onBlur={() => setEditingTask(null)}
                                     />
-                                    <button type="submit">Save</button>
-                                    <button type="button" onClick={cancelEdit}>Cancel</button>
+                                    <button type="submit" className="btn btn-primary">Guardar</button>
+                                    <button type="button" onClick={() => setEditingTask(null)} className="btn btn-secondary">Cancelar</button>
                                 </form>
                             ) : (
                                 <>
-                                    <input 
-                                        type="checkbox"
-                                        checked={task.status === 'Completed'}
-                                        onChange={() => toggleTaskStatus(task)}
-                                    />
-                                    <span style={{ textDecoration: task.status === 'Completed' ? 'line-through' : 'none' }}>
-                                        {task.title}
-                                    </span>
-                                    <button onClick={() => startEdit(task)}>Edit</button>
-                                    <button onClick={() => deleteTask(task._id)}>Delete</button>
+                                    <div className="task-content">
+                                        <input
+                                            type="checkbox"
+                                            checked={task.status === 'Completed'}
+                                            onChange={() => toggleTaskStatus(task)}
+                                        />
+                                        <h2 className="task-title">{task.title}</h2>
+                                    </div>
+                                    <div className="task-actions">
+                                        <button onClick={() => setEditingTask(task)} className="btn btn-secondary">Editar</button>
+                                        <button onClick={() => deleteTask(task._id)} className="btn btn-primary">Eliminar</button>
+                                    </div>
                                 </>
                             )}
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                        </div>
+                    )) : (
+                        <div className="no-tasks">
+                            <p>¡Felicidades! No tienes tareas pendientes.</p>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

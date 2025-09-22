@@ -5,18 +5,30 @@
   --text-secondary-color: #a0a0a0;
 }
 
+/* --- Estilos globales --- */
 body {
   font-family: 'Poppins', sans-serif;
   margin: 0;
+  padding: 0;
   color: var(--text-color);
   background-color: var(--background-color);
+  line-height: 1.6;
 }
 
+/* --- Contenedor Principal Reutilizable --- */
+.container {
+  width: 100%;
+  max-width: 1400px; /* Optimizado para 27" (antes 2800px) */
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px);
+  box-sizing: border-box;
+}
+
+/* --- Landing Page --- */
 .landing-page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  text-align: center;
 }
 
 /* --- Barra de Navegación --- */
@@ -35,12 +47,15 @@ body {
 
 /* --- Estilos de Botones --- */
 .btn {
+  display: inline-block; /* Importante para que funcione el padding y hover */
   padding: 12px 24px;
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  cursor: pointer;
+  text-align: center;
 }
 
 .btn-primary {
@@ -73,41 +88,45 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 60px 0;
 }
 
 .hero-content {
-  max-width: 1800px;
+  max-width: 1400px; /* 👈 Ideal para 27" */
+  margin: 0 auto;
+  padding: 0 40px; /* 👈 Más padding en pantallas grandes */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px; /* 👈 Más espacio entre elementos */
 }
 
 .hero-title {
-  font-size: 4rem;
+  font-size: 4.5rem; /* 👈 Más grande para aprovechar la pantalla */
   line-height: 1.1;
-  margin-bottom: 20px;
-  background: -webkit-linear-gradient(45deg, #FF007F, #a759f5);
+  margin: 0;
+  background: linear-gradient(45deg, #FF007F, #a759f5);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  color: transparent; /* Fallback para navegadores sin soporte */
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   line-height: 1.6;
-  margin-bottom: 40px;
+  max-width: 900px; /* 👈 Limita ancho para mejor lectura */
+  margin: 0 auto;
   color: var(--text-secondary-color);
 }
 
 /* --- Pie de Página --- */
 .footer {
   padding: 40px 0;
+  text-align: center;
   color: #666;
-}
-
-/* --- Contenedor Principal Reutilizable --- */
-.container {
-  width: 100%;
-  max-width: 2800px; /* Ancho máximo del contenido */
-  margin: 0 auto;    /* Centra el contenedor horizontalmente */
-  padding: 0 20px;   /* Espacio a los lados en pantallas pequeñas */
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+  font-size: 0.9rem;
 }
 
 /* --- Estilos para la Página de Login --- */
@@ -115,27 +134,33 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 1; /* Ocupa el espacio vertical disponible */
+  flex-grow: 1;
+  min-height: 80vh; /* 👈 Asegura que ocupe suficiente altura */
+  padding: 40px 0;
+  width: 100%; /* 👈 Asegura que el contendor tenga ancho completo */
 }
 
 .login-box {
-  background-color: #1a1a1a; /* Un gris un poco más claro que el fondo */
-  padding: 40px;
-  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto; /* 👈 Centra horizontalmente */
+  padding: 50px;
+  border-radius: 16px;
   border: 1px solid #333;
-  width: 100%;
-  max-width: 800px;
-  text-align: left; /* Alinea el texto a la izquierda dentro de la caja */
+  background-color: #1a1a1a;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: left;
 }
 
 .login-box h1 {
-  text-align: center; /* Centra solo el título 'Login' */
+  text-align: center;
   margin-top: 0;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  font-size: 2rem;
+  color: var(--text-color);
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .input-group label {
@@ -143,28 +168,55 @@ body {
   margin-bottom: 8px;
   font-weight: bold;
   color: var(--text-secondary-color);
+  font-size: 0.95rem;
 }
 
 .input-group input {
   width: 100%;
-  padding: 12px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 8px;
   border: 1px solid #444;
   background-color: #222;
   color: var(--text-color);
   font-size: 1rem;
-  box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(255, 0, 127, 0.2);
 }
 
 /* Centra el botón de login */
 .login-box .btn-primary {
   width: 100%;
-  padding: 15px;
+  padding: 16px;
   font-size: 1.1rem;
+  margin-top: 10px;
 }
 
 .error-message {
   color: #ff4d4d;
   text-align: center;
   margin-top: 20px;
+  font-weight: 500;
+}
+
+/* --- Media Query para pantallas ultra grandes (opcional) --- */
+@media (min-width: 2560px) {
+  .hero-content {
+    max-width: 1400px;
+    padding: 0 80px;
+  }
+
+  .hero-title {
+    font-size: 5rem;
+  }
+
+  .container {
+    max-width: 1400px;
+    padding: 0 80px;
+  }
 }
