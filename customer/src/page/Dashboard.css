@@ -1,0 +1,132 @@
+/* customer/src/page/Dashboard.css */
+
+.dashboard-container {
+  padding-top: 40px;
+  padding-bottom: 60px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 2.5rem;
+}
+
+.task-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  background-color: #1a1a1a;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #333;
+}
+
+.task-controls input,
+.task-controls select {
+  padding: 12px 15px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background-color: #222;
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.task-controls input {
+  flex-grow: 1;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.task-item {
+  background-color: #1a1a1a;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #555;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.task-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.task-item.completed {
+  border-left-color: var(--primary-color);
+  background-color: #222;
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-secondary-color);
+}
+
+.task-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-grow: 1;
+}
+
+.task-content input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.task-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.task-form-edit {
+  display: flex;
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.task-input-edit {
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--primary-color);
+  background-color: #333;
+  color: var(--text-color);
+  font-size: 1.1rem;
+}
+
+.task-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.task-actions .btn {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+}
+
+.no-tasks {
+  text-align: center;
+  padding: 50px;
+  background-color: #1a1a1a;
+  border-radius: 8px;
+  color: var(--text-secondary-color);
+  border: 1px dashed #444;
+}

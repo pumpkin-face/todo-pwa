@@ -2,12 +2,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Tus páginas
+// Páginas
 import App from './App.tsx';
 import Login from './page/Login.tsx';
 import Dashboard from './page/Dashboard.tsx';
+import Register from './page/Register.tsx';
 
-// Tu componente de rutas privadas
+// Componentes de rutas privadas
 import PrivateRoutes from './routes/PrivateRoutes.tsx';
 
 import './index.css';
@@ -19,6 +20,7 @@ createRoot(document.getElementById('root')!).render(
         {/* --- Rutas Públicas --- */}
         <Route path="/" element={<App />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         {/* --- Rutas Privadas --- */}
         <Route element={<PrivateRoutes />}>
