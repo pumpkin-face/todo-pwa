@@ -19,7 +19,7 @@ const taskSchema = new Schema<ITask, TaskModel>( // 3. Pasa los tipos aquí
     {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         title: { type: String, required: true, trim: true },
-        description: { type: String, trim: true, default: '' },
+        description: { type: String, required: false, default: '' },
         status: {
             type: String,
             enum: ['Pending', 'In Progress', 'Completed'],
