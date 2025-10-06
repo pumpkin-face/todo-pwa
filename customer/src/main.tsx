@@ -26,7 +26,7 @@ createRoot(document.getElementById('root')!).render(
         <Route element={<PrivateRoutes />}>
           {/* Todas las rutas aquí adentro estarán protegidas */}
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* Si tuvieras más rutas, irían aquí: */}
+          {/* Si tuviera más rutas, irían aquí: */}
           {/* <Route path="/profile" element={<Profile />} /> */}
           {/* <Route path="/settings" element={<Settings />} /> */}
         </Route>

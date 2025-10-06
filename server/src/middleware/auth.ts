@@ -1,7 +1,7 @@
 import { Response, NextFunction, Request } from "express";
 import jwt from "jsonwebtoken";
 
-// La interfaz para nuestra petición se mantiene igual
+// La interfaz para mi petición se mantiene igual
 interface AuthRequest extends Request {
   userId?: string;
 }
@@ -17,7 +17,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "changeme");
 
     // --- VERIFICACIÓN MEJORADA ---
-    // Verificamos si el payload es un objeto y si tiene la propiedad 'id'
+    // Verifico si el payload es un objeto y si tiene la propiedad 'id'
     if (typeof decoded === 'object' && decoded.id) {
       req.userId = decoded.id;
       next();
@@ -28,7 +28,7 @@ export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
     
   } catch (error) {
     // Este bloque 'catch' ahora atrapa tanto los errores de jwt.verify
-    // como el error que lanzamos nosotros si el payload no es correcto.
+    // como el error que lance si el payload no es correcto.
     console.error("Token verification failed:", error);
     return res.status(401).json({ message: "Token is invalid" });
   }

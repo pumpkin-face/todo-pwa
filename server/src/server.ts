@@ -20,7 +20,7 @@ app.use(morgan('dev'));
 // Rutas
 app.get('/', (req: Request, res: Response) => res.json({ ok: true, name: 'todo-pwa-api' }));
 app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes); // <-- 2. Línea añadida para registrar las rutas
+app.use('/api/tasks', taskRoutes);
 
 // Conexión a la Base de Datos y Arranque del Servidor
 mongoose.connect(process.env.MONGODB_URI!)
