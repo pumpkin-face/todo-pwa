@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api, setAuth } from '../api';
 import './Dashboard.css';
 
-// 1. El tipo 'Task' ahora incluye la descripción
+// El tipo 'Task' ahora incluye la descripción
 type Task = {
     _id: string;
     title: string;
@@ -16,7 +16,7 @@ type FilterStatus = 'all' | 'Completed' | 'Pending';
 export default function Dashboard() {
     // --- Estados del Componente ---
     const [tasks, setTasks] = useState<Task[]>([]);
-    // 2. Estado unificado para la nueva tarea
+    // Estado unificado para la nueva tarea
     const [newTask, setNewTask] = useState({ title: '', description: '' });
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<FilterStatus>('all');
@@ -67,7 +67,7 @@ export default function Dashboard() {
         setNewTask({ title: '', description: '' }); // Limpiamos ambos campos
 
         try {
-            // 3. Enviamos ambos campos al backend
+            // Enviamos ambos campos al backend
             await api.post('/tasks', { title: title.trim(), description: description.trim() });
             await fetchTasks();
         } catch (error) {
@@ -114,7 +114,7 @@ export default function Dashboard() {
         setEditingTask(null);
 
         try {
-            // 4. Enviamos ambos campos al backend al actualizar
+            // Enviamos ambos campos al backend al actualizar
             await api.put(`/tasks/${taskToUpdate._id}`, { 
                 title: taskToUpdate.title.trim(),
                 description: taskToUpdate.description.trim()
@@ -202,7 +202,7 @@ export default function Dashboard() {
                                             onChange={() => toggleTaskStatus(task)}
                                         />
                                         <div>
-                                            {/* 7. Mostramos título y descripción */}
+                                            {/* Mostramos título y descripción */}
                                             <h2 className="task-title">{task.title}</h2>
                                             <p className="task-description">{task.description}</p>
                                         </div>

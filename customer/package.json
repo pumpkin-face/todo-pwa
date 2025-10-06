@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -29,5 +29,8 @@
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
     "vite-plugin-pwa": "^1.0.3"
+  },
+  "resolutions": {
+    "vite-plugin-pwa/@vitejs/plugin-react": "4.2.1"
   }
 }

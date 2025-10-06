@@ -14,25 +14,21 @@ services:
     volumes:
       - ./server:/app
       - /app/node_modules
-    # El comando se puede quitar, ya que está en el Dockerfile.dev
-    # command: npm run dev 
 
   customer:
     build:
       context: ./customer
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile.prod
     container_name: todo-pwa-client
     ports:
-      - "3000:3000"
+      - "3000:80"
     networks:
       - app-network
     depends_on:
       - server
-    volumes:
-      - ./customer:/app
-      - /app/node_modules
-    # El comando se puede quitar, ya que está en el Dockerfile.dev
-    # command: npm run dev
+    # volumes:
+    #   - ./customer:/app
+    #   - /app/node_modules
 
 networks:
   app-network:

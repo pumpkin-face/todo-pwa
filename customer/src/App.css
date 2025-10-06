@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #FF007F; /* Rosa Fosforescente */
-  --background-color: #121212; /* Negro/Gris muy oscuro */
-  --text-color: #F0F0F0; /* Blanco roto */
+  --primary-color: #FF007F;
+  --background-color: #121212;
+  --text-color: #F0F0F0;
   --text-secondary-color: #a0a0a0;
 }
 
@@ -18,7 +18,7 @@ body {
 /* --- Contenedor Principal Reutilizable --- */
 .container {
   width: 100%;
-  max-width: 1400px; /* Optimizado para 27" (antes 2800px) */
+  max-width: 1400px;
   margin: 0 auto;
   padding: 0 clamp(20px, 5vw, 80px);
   box-sizing: border-box;
@@ -47,7 +47,7 @@ body {
 
 /* --- Estilos de Botones --- */
 .btn {
-  display: inline-block; /* Importante para que funcione el padding y hover */
+  display: inline-block;
   padding: 12px 24px;
   border-radius: 8px;
   text-decoration: none;
@@ -92,31 +92,31 @@ body {
 }
 
 .hero-content {
-  max-width: 1400px; /* 👈 Ideal para 27" */
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 40px; /* 👈 Más padding en pantallas grandes */
+  padding: 0 40px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px; /* 👈 Más espacio entre elementos */
+  gap: 30px;
 }
 
 .hero-title {
-  font-size: 4.5rem; /* 👈 Más grande para aprovechar la pantalla */
+  font-size: 4.5rem;
   line-height: 1.1;
   margin: 0;
   background: linear-gradient(45deg, #FF007F, #a759f5);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: transparent; /* Fallback para navegadores sin soporte */
+  color: transparent;
 }
 
 .hero-subtitle {
   font-size: 1.3rem;
   line-height: 1.6;
-  max-width: 900px; /* 👈 Limita ancho para mejor lectura */
+  max-width: 900px;
   margin: 0 auto;
   color: var(--text-secondary-color);
 }
@@ -135,14 +135,14 @@ body {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  min-height: 80vh; /* 👈 Asegura que ocupe suficiente altura */
+  min-height: 80vh;
   padding: 40px 0;
-  width: 100%; /* 👈 Asegura que el contendor tenga ancho completo */
+  width: 100%;
 }
 
 .login-box {
   max-width: 500px;
-  margin: 0 auto; /* 👈 Centra horizontalmente */
+  margin: 0 auto;
   padding: 50px;
   border-radius: 16px;
   border: 1px solid #333;

@@ -25,7 +25,7 @@ export default function Register() {
             localStorage.setItem('token', data.token);
             setAuth(data.token);
             
-            // Redirigimos al dashboard
+            // Redirigo al dashboard daddy
             navigate('/dashboard');
 
         } catch (err) {

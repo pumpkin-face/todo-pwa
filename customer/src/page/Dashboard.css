@@ -1,17 +1,25 @@
 /* customer/src/page/Dashboard.css */
 
 .dashboard-container {
-  padding-top: 40px;
-  padding-bottom: 60px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  width: 100%;
+  text-align: center;
+
   margin-bottom: 30px;
-  flex-wrap: wrap;
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
 }
 
 .dashboard-header h1 {
@@ -29,12 +37,14 @@
   border-radius: 12px;
   margin-bottom: 30px;
   border: 1px solid #333;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-controls input,
 .task-controls select {
   padding: 12px 15px;
-  border-radius: 6px;
+  border-radius: 12px;
   border: 1px solid #444;
   background-color: #222;
   color: var(--text-color);
@@ -49,17 +59,20 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%;
 }
 
 .task-item {
   background-color: #1a1a1a;
   padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid #555;
+  border-radius: 15px;
+  border-left: 5px solid #555;
   display: flex;
   justify-content: space-between;
   align-items: center;
   transition: all 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-item:hover {
@@ -85,8 +98,8 @@
 }
 
 .task-content input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   cursor: pointer;
 }
 
@@ -95,21 +108,28 @@
   font-size: 1.2rem;
 }
 
+.task-description {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+}
+
 .task-form-edit {
   display: flex;
   flex-direction: column;
   width: 100%;
   gap: 10px;
+  box-sizing: border-box;
 }
 
-.task-input-edit {
-  flex-grow: 1;
-  padding: 10px;
-  border-radius: 6px;
+.task-input-edit .task-form-edit textarea{
+  padding: 12px;
+  border-radius: 12px;
   border: 1px solid var(--primary-color);
   background-color: #333;
   color: var(--text-color);
   font-size: 1.1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-actions {
@@ -130,22 +150,28 @@
   border-radius: 8px;
   color: var(--text-secondary-color);
   border: 1px dashed #444;
-}
-
-.task-description {
-  margin: 4px 0 0;
-  color: var(--text-secondary-color);
-  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .add-task-form {
     display: grid;
     grid-template-columns: 1fr 1fr auto;
     gap: 15px;
+    width: 100%;
+    box-sizing: border-box;
+    justify-items: center;
+    align-items: center;
+}
+
+.add-task-form input {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .task-form-edit .task-actions {
     justify-content: flex-end;
+    width: 100%;
 }
 
 .task-input-edit, .task-form-edit textarea {

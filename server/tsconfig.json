@@ -9,8 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     
-    // --- LÍNEA AÑADIDA ---
-    // Le decimos a TypeScript que busque tipos en node_modules Y en nuestra carpeta 'src/types'
+    // Le digo a TypeScript que busque tipos en node_modules Y en nuestra carpeta 'src/types'
     "typeRoots": ["./node_modules/@types", "./src/types"]
   },
   "include": ["src/**/*"],

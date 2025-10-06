@@ -3,7 +3,7 @@ import Task, { ITask } from '../models/Task';
 
 // --- Definición de Interfaces ---
 
-// 1. Añadimos la interfaz personalizada para peticiones autenticadas
+// Añado la interfaz personalizada para peticiones autenticadas
 interface AuthRequest extends Request {
     userId?: string;
 }
@@ -28,7 +28,7 @@ const allowedStatus = ['Pending', 'In Progress', 'Completed'];
 
 // --- Controladores CRUD ---
 
-// 2. Aplicamos AuthRequest a TODAS las funciones de este archivo
+// Aplico AuthRequest a TODAS las funciones de este archivo
 export async function list(req: AuthRequest, res: Response) {
     try {
         const tasks = await Task.find({ user: req.userId, deleted: false }).sort({ createdAt: -1 });
