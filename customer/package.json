@@ -27,10 +27,7 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2",
+    "vite": "^5.0.0",
     "vite-plugin-pwa": "^1.0.3"
-  },
-  "resolutions": {
-    "vite-plugin-pwa/@vitejs/plugin-react": "4.2.1"
   }
 }
