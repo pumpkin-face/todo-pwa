@@ -1,0 +1,27 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "builds": [
+    {
+      "src": "customer/package.json",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "customer/vite.config.js",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/customer/api"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/customer/file"
+    }
+  ]
+}
