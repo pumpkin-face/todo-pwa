@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec \"npx ts-node --files\" src/server.ts",
-    "start": "node src/server.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "nodemon --exec \"npx ts-node --files\" src/server.ts"
   },
   "keywords": [],
   "author": "",

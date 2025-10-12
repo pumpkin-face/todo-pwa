@@ -183,3 +183,8 @@
     font-size: 1.1rem;
     font-family: 'Poppins', sans-serif;
 }
+
+.task-item.unsynced {
+    opacity: 0.7;
+    border-left-color: orange;
+}

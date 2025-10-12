@@ -1,31 +1,30 @@
-import mongoose, { Document, Schema, Model } from "mongoose"; // 1. Importa 'Model'
+import mongoose, { Document, Schema, Model, Types } from "mongoose";
 
-// Interfaz ITask se queda igual
+// Esta interfaz define la forma de nuestros documentos de Tarea
 export interface ITask extends Document {
+    _id: Types.ObjectId;
     user: Schema.Types.ObjectId;
     title: string;
     description: string;
-    status: 'Pending' | 'In Progress' | 'Completed';
-    clientID?: string;
+    status: 'Pending' | 'Completed';
     deleted: boolean;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
-// (OPCIONAL PERO RECOMENDADO) Crea un tipo para el modelo
-// Esto ayuda a TypeScript a entender las funciones estáticas como .find(), .create()
+// Este tipo define el modelo para que TypeScript entienda los métodos estáticos
 export type TaskModel = Model<ITask>;
 
-// Schema se queda igual
-const taskSchema = new Schema<ITask, TaskModel>( // Pasa los tipos aquí
+const taskSchema = new Schema<ITask, TaskModel>(
     {
         user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         title: { type: String, required: true, trim: true },
         description: { type: String, required: false, default: '' },
         status: {
             type: String,
-            enum: ['Pending', 'In Progress', 'Completed'],
+            enum: ['Pending', 'Completed'],
             default: 'Pending'
         },
-        clientID: { type: String },
         deleted: { type: Boolean, default: false }
     },
     {
@@ -33,8 +32,8 @@ const taskSchema = new Schema<ITask, TaskModel>( // Pasa los tipos aquí
     }
 );
 
+// Índice para mejorar el rendimiento de las búsquedas
 taskSchema.index({ user: 1, createdAt: -1 });
 
-// Exporta el modelo con una sintaxis ligeramente diferente
 const Task = mongoose.model<ITask, TaskModel>('Task', taskSchema);
 export default Task;
