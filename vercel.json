@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd customer && npm run build",
-  "outputDirectory": "customer/dist",
-  "installCommand": "cd customer && npm install"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install"
 }
