@@ -2,166 +2,162 @@ import { useEffect, useMemo, useState, type FormEvent, useCallback, type ChangeE
 import { useNavigate } from "react-router-dom";
 import { api, setAuth } from '../api';
 import './Dashboard.css';
-
-// El tipo 'Task' ahora incluye la descripción
-type Task = {
-    _id: string;
-    title: string;
-    description: string;
-    status: 'Pending' | 'Completed';
-};
-
-type FilterStatus = 'all' | 'Completed' | 'Pending';
+import { getLocalTasks, setLocalTasks, getSyncQueue, addToSyncQueue, clearSyncQueue } from '../utils/storage';
+import type { Task, FilterStatus } from '../types';
 
 export default function Dashboard() {
-    // --- Estados del Componente ---
-    const [tasks, setTasks] = useState<Task[]>([]);
-    // Estado unificado para la nueva tarea
+    const [tasks, setTasks] = useState<Task[]>(() => getLocalTasks());
     const [newTask, setNewTask] = useState({ title: '', description: '' });
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<FilterStatus>('all');
     const [editingTask, setEditingTask] = useState<Task | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
     const navigate = useNavigate();
 
-    // --- Lógica de Datos (sin cambios) ---
-    const fetchTasks = useCallback(async () => {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) { navigate('/login'); return; }
-            setAuth(token);
-            const { data } = await api.get('/tasks');
-            setTasks(data);
-        } catch (error) {
-            console.error("Failed to load tasks", error);
-        } finally {
-            setLoading(false);
+    const syncWithServer = useCallback(async () => {
+        if (!navigator.onLine) {
+            console.log("Offline, no se puede sincronizar.");
+            return;
         }
-    }, [navigate]);
+        const queue = getSyncQueue();
+        if (queue.length === 0) {
+            // No hacemos la llamada a GET /tasks aquí, se hace en el useEffect inicial
+            return;
+        }
 
-    useEffect(() => {
-        fetchTasks();
-    }, [fetchTasks]);
+        try {
+            await api.post('/tasks/sync', { actions: queue });
+            clearSyncQueue();
+            console.log("Sincronización exitosa.");
+            
+            // Después de sincronizar, siempre obtenemos la lista fresca y autoritativa del servidor
+            const { data: serverTasks } = await api.get('/tasks');
+            setLocalTasks(serverTasks);
+            setTasks(serverTasks);
 
-    const filteredTasks = useMemo(() => {
-        return tasks
-            .filter(task => filter === 'all' || task.status === filter)
-            .filter(task => 
-                task.title.toLowerCase().includes(search.toLowerCase()) ||
-                task.description.toLowerCase().includes(search.toLowerCase())
-            );
-    }, [tasks, search, filter]);
-
-    function handleFilterChange(e: ChangeEvent<HTMLSelectElement>) {
-        setFilter(e.target.value as FilterStatus);
-    }
+        } catch (error) { 
+            console.error("Fallo la sincronización con el servidor:", error); 
+        }
+    }, []);
     
-    // --- Funciones CRUD (actualizadas para incluir descripción) ---
+    // --- useEffect CORREGIDO ---
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        setAuth(token);
+
+        // Función para cargar los datos iniciales
+        const loadInitialData = async () => {
+            setLoading(true);
+            try {
+                // Obtenemos las tareas frescas del servidor como fuente principal
+                const { data: serverTasks } = await api.get('/tasks');
+                setTasks(serverTasks);
+                setLocalTasks(serverTasks);
+                // Intentamos sincronizar cualquier acción pendiente que haya quedado de antes
+                await syncWithServer(); 
+            } catch (error) {
+                console.error("Error al cargar datos iniciales. Usando datos locales.", error);
+                // Si falla la carga inicial (ej. sin internet), nos quedamos con los datos locales
+                setTasks(getLocalTasks());
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        loadInitialData();
+        
+        const handleOnline = () => { setIsOnline(true); syncWithServer(); };
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+        };
+    }, [navigate, syncWithServer]);
+
+    // El resto del código no necesita cambios
+    
+    const filteredTasks = useMemo(() => {
+        return tasks.filter(task => !task.isDeleted).filter(task => filter === 'all' || task.status === filter).filter(task => task.title.toLowerCase().includes(search.toLowerCase()) || (task.description && task.description.toLowerCase().includes(search.toLowerCase())));
+    }, [tasks, search, filter]);
+    
+    function handleFilterChange(e: ChangeEvent<HTMLSelectElement>) { setFilter(e.target.value as FilterStatus); }
+
     async function addTask(e: FormEvent) {
         e.preventDefault();
         const { title, description } = newTask;
         if (!title.trim()) return;
-
-        const optimisticTask: Task = { _id: `temp-${Date.now()}`, title: title.trim(), description: description.trim(), status: 'Pending' };
-        setTasks(prev => [optimisticTask, ...prev]);
-        setNewTask({ title: '', description: '' }); // Limpiamos ambos campos
-
-        try {
-            // Enviamos ambos campos al backend
-            await api.post('/tasks', { title: title.trim(), description: description.trim() });
-            await fetchTasks();
-        } catch (error) {
-            console.error("Failed to add task", error);
-            setTasks(prev => prev.filter(t => t._id !== optimisticTask._id));
-        }
+        const newTaskObject: Task = { _id: `client-${crypto.randomUUID()}`, title: title.trim(), description: description.trim(), status: 'Pending', isDeleted: false };
+        const newTasks = [newTaskObject, ...tasks];
+        setTasks(newTasks);
+        setLocalTasks(newTasks);
+        addToSyncQueue({ type: 'create', payload: newTaskObject });
+        setNewTask({ title: '', description: '' });
+        syncWithServer();
     }
 
     async function toggleTaskStatus(task: Task) {
-        const newStatus = task.status === 'Pending' ? 'Completed' : 'Pending';
-        const originalTasks = tasks;
-        setTasks(prev => prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
-        try {
-            await api.put(`/tasks/${task._id}`, { status: newStatus });
-        } catch (error) {
-            console.error("Failed to toggle task status", error);
-            setTasks(originalTasks);
-        }
+        const newStatus = (task.status === 'Pending' ? 'Completed' : 'Pending') as 'Pending' | 'Completed';
+        const updatedTask = { ...task, status: newStatus };
+        const newTasks = tasks.map(t => t._id === task._id ? updatedTask : t);
+        setTasks(newTasks);
+        setLocalTasks(newTasks);
+        addToSyncQueue({ type: 'update', payload: { _id: task._id, status: newStatus } });
+        syncWithServer();
     }
-
-    async function deleteTask(id: string) {
-        const originalTasks = tasks;
-        setTasks(prev => prev.filter(t => t._id !== id));
-        try {
-            await api.delete(`/tasks/${id}`);
-        } catch (error) {
-            console.error("Failed to delete task", error);
-            setTasks(originalTasks);
-        }
-    }
-
+    
     async function saveEdit(e: FormEvent) {
         e.preventDefault();
         if (!editingTask) return;
-        if (!editingTask.title.trim()) {
-            setEditingTask(null);
-            return;
-        }
-
-        const originalTasks = tasks;
-        const taskToUpdate = editingTask;
-        
-        setTasks(prev => prev.map(t => t._id === taskToUpdate._id ? taskToUpdate : t));
+        if (!editingTask.title.trim()) { setEditingTask(null); return; }
+        const taskToUpdate = { ...editingTask, title: editingTask.title.trim(), description: editingTask.description.trim() };
+        const newTasks = tasks.map(t => t._id === taskToUpdate._id ? taskToUpdate : t);
+        setTasks(newTasks);
+        setLocalTasks(newTasks);
+        addToSyncQueue({ type: 'update', payload: { _id: taskToUpdate._id, title: taskToUpdate.title, description: taskToUpdate.description } });
         setEditingTask(null);
-
-        try {
-            // Enviamos ambos campos al backend al actualizar
-            await api.put(`/tasks/${taskToUpdate._id}`, { 
-                title: taskToUpdate.title.trim(),
-                description: taskToUpdate.description.trim()
-            });
-        } catch (error) {
-            console.error("Failed to save task", error);
-            setTasks(originalTasks);
-        }
+        syncWithServer();
     }
 
+    async function deleteTask(id: string) {
+        const newTasks = tasks.map(t => t._id === id ? { ...t, isDeleted: true } : t);
+        setTasks(newTasks);
+        setLocalTasks(newTasks);
+        addToSyncQueue({ type: 'delete', payload: { _id: id } });
+        syncWithServer();
+    }
+    
     function handleLogout() {
         localStorage.removeItem('token');
         setAuth(null);
         navigate('/login');
     }
 
-    // --- Renderizado del Componente (actualizado) ---
     return (
         <div className="dashboard-container container">
             <header className="dashboard-header">
                 <h1>Mis Tareas</h1>
-                <button onClick={handleLogout} className="btn btn-secondary">Cerrar Sesión</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <span style={{ color: isOnline ? 'lightgreen' : 'tomato' }}>● {isOnline ? 'En línea' : 'Sin conexión'}</span>
+                    <button onClick={handleLogout} className="btn btn-secondary">Cerrar Sesión</button>
+                </div>
             </header>
-
-            {/* 5. Formulario de creación con ambos campos */}
+            
             <form onSubmit={addTask} className="task-controls add-task-form">
-                <input
-                    value={newTask.title}
-                    onChange={e => setNewTask({ ...newTask, title: e.target.value })}
-                    placeholder="Título de la nueva tarea"
-                    disabled={loading}
-                />
-                <input
-                    value={newTask.description}
-                    onChange={e => setNewTask({ ...newTask, description: e.target.value })}
-                    placeholder="Descripción (opcional)"
-                    disabled={loading}
-                />
+                <input value={newTask.title} onChange={e => setNewTask({ ...newTask, title: e.target.value })} placeholder="Título de la nueva tarea" />
+                <input value={newTask.description} onChange={e => setNewTask({ ...newTask, description: e.target.value })} placeholder="Descripción (opcional)" />
                 <button type="submit" className="btn btn-primary">Añadir Tarea</button>
             </form>
 
             <div className="task-controls">
-                <input
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Buscar en título o descripción..."
-                />
+                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar en título o descripción..." />
                 <select value={filter} onChange={handleFilterChange}>
                     <option value="all">Todas</option>
                     <option value="Pending">Pendientes</option>
@@ -169,25 +165,14 @@ export default function Dashboard() {
                 </select>
             </div>
             
-            {loading ? <p>Cargando tareas...</p> : (
+            {loading ? <p>Cargando...</p> : (
                 <div className="task-list">
                     {filteredTasks.length > 0 ? filteredTasks.map(task => (
-                        <div key={task._id} className={`task-item ${task.status === 'Completed' ? 'completed' : ''}`}>
+                        <div key={task._id} className={`task-item ${task.status === 'Completed' ? 'completed' : ''} ${task._id.startsWith('client-') ? 'unsynced' : ''}`}>
                             {editingTask?._id === task._id ? (
-                                // 6. Formulario de edición con ambos campos
                                 <form onSubmit={saveEdit} className="task-form-edit">
-                                    <input
-                                        value={editingTask.title}
-                                        onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
-                                        className="task-input-edit"
-                                        autoFocus
-                                    />
-                                    <textarea
-                                        value={editingTask.description}
-                                        onChange={e => setEditingTask({ ...editingTask, description: e.target.value })}
-                                        className="task-input-edit"
-                                        placeholder="Descripción"
-                                    />
+                                    <input value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })} className="task-input-edit" autoFocus />
+                                    <textarea value={editingTask.description} onChange={e => setEditingTask({ ...editingTask, description: e.target.value })} className="task-input-edit" placeholder="Descripción" />
                                     <div className="task-actions">
                                         <button type="submit" className="btn btn-primary">Guardar</button>
                                         <button type="button" onClick={() => setEditingTask(null)} className="btn btn-secondary">Cancelar</button>
@@ -196,13 +181,8 @@ export default function Dashboard() {
                             ) : (
                                 <>
                                     <div className="task-content">
-                                        <input
-                                            type="checkbox"
-                                            checked={task.status === 'Completed'}
-                                            onChange={() => toggleTaskStatus(task)}
-                                        />
+                                        <input type="checkbox" checked={task.status === 'Completed'} onChange={() => toggleTaskStatus(task)} />
                                         <div>
-                                            {/* Mostramos título y descripción */}
                                             <h2 className="task-title">{task.title}</h2>
                                             <p className="task-description">{task.description}</p>
                                         </div>

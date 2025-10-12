@@ -1,32 +1,37 @@
-# --- ETAPA 1: Construcción (Builder) ---
-FROM node:20-alpine AS builder
+# ---- Etapa 1: Builder ----
+FROM node:20 AS builder
 
 WORKDIR /app
 
-# Copiar package.json y package-lock.json para instalar todas las dependencias
 COPY package*.json ./
+
+# --- CAMBIO CLAVE AQUÍ ---
+# Instala TODAS las dependencias (incluyendo devDependencies como 'typescript') para poder compilar.
 RUN npm install
 
-# Copiar todo el código fuente del proyecto
+# Copia el resto del código fuente
 COPY . .
 
-# Compilacion TypeScript a JavaScript
+# Compila el código TypeScript
 RUN npm run build
 
-# --- ETAPA 2: Producción ---
+
+# ---- Etapa 2: Production ----
+# En esta etapa, creamos la imagen final usando una base más ligera.
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Copiar package.json de nuevo para instalar solo las dependencias de producción
-COPY package*.json ./
-RUN npm install --omit=dev
+COPY package.json .
 
-# Copiar el código compilado desde la etapa de construcción
+# Instala SOLO las dependencias de producción
+RUN npm install --only=production
+
+# Copia el código JavaScript compilado desde la etapa 'builder'
+# (Nota: Asegúrate de que tu tsconfig.json compile a una carpeta 'dist')
 COPY --from=builder /app/dist ./dist
 
-# Exponer el puerto que usa el servidor
 EXPOSE 5000
 
-# El comando final para iniciar el server
-CMD [ "node", "dist/server.js" ]
+# El comando para iniciar el servidor en producción, ejecutando el JS compilado
+CMD ["npm", "run", "start"]
