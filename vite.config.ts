@@ -38,13 +38,13 @@ export default defineConfig({
         categories: ["productivity", "utilities"],
         icons: [
           {
-            src: '/icons/icon-192x192.png',
+            src: '/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/icons/icon-512x512.png',
+            src: '/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
@@ -53,14 +53,14 @@ export default defineConfig({
         // --- AÑADIDO: Capturas de pantalla ---
         screenshots: [
           {
-            "src": "/screenshots/screenshot-desktop.png",
-            "sizes": "1280x720",
+            "src": "/icon-1280x780.png",
+            "sizes": "1280x780",
             "type": "image/png",
             "form_factor": "wide",
             "label": "Vista de Tareas en Escritorio"
           },
           {
-            "src": "/screenshots/screenshot-mobile.png",
+            "src": "/screenshot-mobile.png",
             "sizes": "750x1334",
             "type": "image/png",
             "form_factor": "narrow",
