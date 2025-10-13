@@ -17,7 +17,7 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -41,18 +41,32 @@ export default defineConfig({
             src: '/icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'maskable any'
+            purpose: 'any'
           },
           {
             src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable any'
+            purpose: 'maskable'
+          }
+        ],
+        // --- AÑADIDO: Capturas de pantalla ---
+        screenshots: [
+          {
+            "src": "/screenshots/screenshot-desktop.png",
+            "sizes": "1280x720",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Vista de Tareas en Escritorio"
+          },
+          {
+            "src": "/screenshots/screenshot-mobile.png",
+            "sizes": "750x1334",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Vista de Tareas en Móvil"
           }
         ]
-      },
-      devOptions: {
-        enabled: true, // Cambiado a true para testing
       },
     })
   ],
@@ -60,7 +74,6 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
   },
-  // Configuración de build optimizada
   build: {
     sourcemap: true,
     rollupOptions: {
