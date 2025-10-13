@@ -1,5 +1,5 @@
-# Archivo de secretos
+node_modules/
+dist/
 .env
-
-# Dependencias de Node
-# **/node_modules
+.DS_Store
+*.log
