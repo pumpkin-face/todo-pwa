@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="landing-page container">
       <header className="navbar">
-        <div className="logo">Todo-PWA</div>
+        <div className="logo">ToDo-PWA</div>
         <nav>
           <Link to="/login" className="btn btn-secondary">
             Iniciar Sesión

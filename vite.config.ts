@@ -8,7 +8,23 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365 // 365 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
       },
       manifest: {
         name: "To-Do App",
@@ -18,47 +34,42 @@ export default defineConfig({
         display: "standalone",
         background_color: "#121212",
         theme_color: '#FF007F',
+        orientation: "portrait",
+        categories: ["productivity", "utilities"],
         icons: [
           {
-            src: '/icons/icon-192x192.png',
+            src: '/icon-192x192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'maskable any'
           },
           {
-            src: '/icons/icon-512x512.png',
+            src: '/icon-512x512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ],
-        screenshots: [
-          {
-            src: '/screenshots/icon-1280x780.png',
-            sizes: '1280x780',
             type: 'image/png',
-            form_factor: 'wide',
-            label: 'Vista de Escritorio'
-          },
-          {
-            src: '/screenshots/screenshot-mobile.png',
-            sizes: '750x1334',
-            type: 'image/png',
-            label: 'Vista Móvil'
+            purpose: 'maskable any'
           }
-        ],
+        ]
       },
       devOptions: {
-        enabled: false,
+        enabled: true, // Cambiado a true para testing
       },
     })
   ],
   server: {
     host: '0.0.0.0',
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://server:5000',
-        changeOrigin: true,
-      },
-    },
   },
+  // Configuración de build optimizada
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          utils: ['axios', 'idb']
+        }
+      }
+    }
+  }
 });
