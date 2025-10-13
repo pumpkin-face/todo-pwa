@@ -1,27 +1,26 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "builds": [
     {
-      "src": "api/index.ts",
-      "use": "@vercel/node@canary"
-    },
-    {
-      "src": "vite.config.ts",
+      "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "api/**/*.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index"
+      "dest": "/api/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/dist/$1"
     }
   ]
 }
