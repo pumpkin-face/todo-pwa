@@ -13,6 +13,19 @@ import PrivateRoutes from './routes/PrivateRoutes.tsx';
 
 import './index.css';
 
+// Registro del Service Worker para PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
@@ -24,11 +37,7 @@ createRoot(document.getElementById('root')!).render(
 
         {/* --- Rutas Privadas --- */}
         <Route element={<PrivateRoutes />}>
-          {/* Todas las rutas aquí adentro estarán protegidas */}
           <Route path="/dashboard" element={<Dashboard />} />
-          {/* Si tuviera más rutas, irían aquí: */}
-          {/* <Route path="/profile" element={<Profile />} /> */}
-          {/* <Route path="/settings" element={<Settings />} /> */}
         </Route>
         
         {/* --- Ruta para Páginas no Encontradas (404) --- */}
