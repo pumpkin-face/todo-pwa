@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mongoose from 'mongoose';
-import Task from '../models/Task';
+import Task from '../models/Task.js';
 import jwt from 'jsonwebtoken';
 
 const connectDB = async () => {
