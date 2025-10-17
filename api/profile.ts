@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mongoose from 'mongoose';
-import User from './models/User';
+import User from './models/User.js';
 import jwt from 'jsonwebtoken';
 
 const connectDB = async () => {
