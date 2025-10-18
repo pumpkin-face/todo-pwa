@@ -1,9 +1,11 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "outDir": "dist-api",
-    "noEmit": false
+    "noEmit": false,
+    "skipLibCheck": true
   },
   "include": ["api"],
   "exclude": ["src"]

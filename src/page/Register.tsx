@@ -18,7 +18,7 @@ export default function Register() {
 
         try {
             // Apuntamos al endpoint de registro
-            const { data } = await api.post('/auth/register', { name, email, password });
+            const { data } = await api.post('/register', { name, email, password });
 
             // Después de un registro exitoso, el backend nos da un token.
             // Automáticamente iniciamos sesión y guardamos el token.
