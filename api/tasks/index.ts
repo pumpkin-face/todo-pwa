@@ -12,7 +12,6 @@ const authenticate = async (req: VercelRequest) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return null;
-    
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "changeme") as any;
     return decoded.id;
   } catch {
