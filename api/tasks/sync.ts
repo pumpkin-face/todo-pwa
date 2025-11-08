@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mongoose from 'mongoose';
-import Task from '../models/Task.js'; // Asegúrate de tener .js
+import Task from '../models/Task.js';
 import jwt from 'jsonwebtoken';
 
 // --- Interfaz para el payload del JWT ---
@@ -17,7 +17,6 @@ interface SyncAction {
 // --- Conexión a la BD ---
 const connectDB = async () => {
   if (mongoose.connections[0].readyState) return;
-  // Asegúrate de que MONGODB_URI esté en tus variables de entorno de Vercel
   await mongoose.connect(process.env.MONGODB_URI!);
 };
 
@@ -26,7 +25,6 @@ const authenticate = async (req: VercelRequest): Promise<string | null> => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return null;
-    // Asegúrate de que JWT_SECRET esté en tus variables de entorno de Vercel
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     return decoded.id;
   } catch {
@@ -36,7 +34,6 @@ const authenticate = async (req: VercelRequest): Promise<string | null> => {
 
 // --- Manejador del Endpoint ---
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // 1. Solo permitir peticiones POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).json({ error: `Método ${req.method} no permitido` });
@@ -50,37 +47,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { actions } = req.body as { actions: SyncAction[] };
-    
     if (!actions || !Array.isArray(actions)) {
-        return res.status(400).json({ message: "Formato de acciones inválido." });
+      return res.status(400).json({ message: "Formato de acciones inválido." });
     }
 
-    // 2. Procesar cada acción de la cola
+    // --- ¡AQUÍ ESTÁ LA MAGIA! ---
+    // Un mapa para almacenar los IDs temporales y los IDs reales de la BD
+    const idMap = new Map<string, string>();
+
+    // 2. Procesar cada acción de la cola EN ORDEN
     for (const action of actions) {
-      const { type, payload } = action;
-      // Separa el ID temporal/real del resto del payload
-      const { _id, ...dataToUpdate } = payload; 
+      let { type, payload } = action;
+      let { _id, ...dataToUpdate } = payload; // Separa el ID del resto del payload
+
+      // Revisa si el ID es uno temporal que ya hemos mapeado
+      if (_id && idMap.has(_id)) {
+        _id = idMap.get(_id)!; // ¡Usa el ID real de la BD!
+      }
 
       switch (type) {
         case 'create':
-          // Creamos la tarea, asignándola al usuario correcto
-          // Ignoramos el _id temporal del cliente (ej. 'client-uuid')
-          await Task.create({ 
+          // El ID en el payload es el ID temporal del cliente (ej. 'client-...')
+          const tempClientId = _id; 
+          
+          // Creamos la tarea, ignorando el ID temporal
+          const newTask = await Task.create({ 
             ...dataToUpdate, 
             user: userId 
           });
+          
+          // Guardamos el ID real en nuestro mapa
+          if (tempClientId) {
+            idMap.set(tempClientId, newTask._id.toString());
+          }
           break;
 
         case 'update':
-          // Actualizamos solo los campos enviados en el payload
+          // El _id ya ha sido reemplazado por el ID real gracias al mapa
           await Task.updateOne(
-            { _id: _id, user: userId }, // Busca por ID Y por usuario (por seguridad)
+            { _id: _id, user: userId },
             { $set: dataToUpdate }
           );
           break;
 
         case 'delete':
-          // Marcamos como eliminada (borrado lógico)
+          // El _id ya ha sido reemplazado por el ID real
           await Task.updateOne(
             { _id: _id, user: userId },
             { $set: { isDeleted: true } }
@@ -92,8 +103,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 3. Devolver éxito
     return res.status(200).json({ message: "Sincronización exitosa" });
 
-  } catch (error) {
+  } 
+    catch (error) {
     console.error("Error en /api/tasks/sync:", error);
-    return res.status(500).json({ message: "Error del servidor durante la sincronización" });
+
+    // --- CORRECCIÓN AQUÍ ---
+    // Verificamos si error es una instancia de Error
+    let errorMessage = "Error del servidor durante la sincronización";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return res.status(500).json({ 
+      message: "Error del servidor durante la sincronización", 
+      errorDetails: errorMessage // <-- Usamos la variable segura
+    });
   }
 }
