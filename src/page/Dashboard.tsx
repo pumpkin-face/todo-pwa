@@ -15,6 +15,7 @@ export default function Dashboard() {
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const navigate = useNavigate();
 
+    // --- MODIFICACIÓN CLAVE ---
     const syncWithServer = useCallback(async () => {
         if (!navigator.onLine) {
             console.log("Offline, no se puede sincronizar.");
@@ -22,26 +23,27 @@ export default function Dashboard() {
         }
         const queue = getSyncQueue();
         if (queue.length === 0) {
-            // No hacemos la llamada a GET /tasks aquí, se hace en el useEffect inicial
             return;
         }
 
         try {
-            await api.post('/tasks/sync', { actions: queue });
+            // 1. Llama al endpoint de sync. 'data' ahora contiene { message: "...", tasks: [...] }
+            const { data } = await api.post('/tasks/sync', { actions: queue });
+            
             clearSyncQueue();
             console.log("Sincronización exitosa.");
             
-            // Después de sincronizar, siempre obtenemos la lista fresca y autoritativa del servidor
-            const { data: serverTasks } = await api.get('/tasks');
-            setLocalTasks(serverTasks);
-            setTasks(serverTasks);
+            // 2. Actualiza el estado local con las tareas devueltas por el endpoint de sync
+            //    (Se elimina la llamada extra a api.get('/tasks'))
+            setLocalTasks(data.tasks);
+            setTasks(data.tasks);
 
         } catch (error) { 
             console.error("Fallo la sincronización con el servidor:", error); 
         }
-    }, []);
+    }, []); // La dependencia '[]' está bien, no depende de nada que cambie
+    // --- FIN DE LA MODIFICACIÓN ---
     
-    // --- useEffect CORREGIDO ---
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -82,10 +84,14 @@ export default function Dashboard() {
         };
     }, [navigate, syncWithServer]);
 
-    // El resto del código no necesita cambios
     
     const filteredTasks = useMemo(() => {
-        return tasks.filter(task => !task.isDeleted).filter(task => filter === 'all' || task.status === filter).filter(task => task.title.toLowerCase().includes(search.toLowerCase()) || (task.description && task.description.toLowerCase().includes(search.toLowerCase())));
+        return tasks.filter(task => !task.isDeleted) // Filtra las tareas marcadas para eliminar
+                    .filter(task => filter === 'all' || task.status === filter)
+                    .filter(task => 
+                        task.title.toLowerCase().includes(search.toLowerCase()) || 
+                        (task.description && task.description.toLowerCase().includes(search.toLowerCase()))
+                    );
     }, [tasks, search, filter]);
     
     function handleFilterChange(e: ChangeEvent<HTMLSelectElement>) { setFilter(e.target.value as FilterStatus); }
@@ -94,13 +100,19 @@ export default function Dashboard() {
         e.preventDefault();
         const { title, description } = newTask;
         if (!title.trim()) return;
-        const newTaskObject: Task = { _id: `client-${crypto.randomUUID()}`, title: title.trim(), description: description.trim(), status: 'Pending', isDeleted: false };
+        const newTaskObject: Task = { 
+            _id: `client-${crypto.randomUUID()}`, 
+            title: title.trim(), 
+            description: description.trim(), 
+            status: 'Pending', 
+            isDeleted: false 
+        };
         const newTasks = [newTaskObject, ...tasks];
         setTasks(newTasks);
         setLocalTasks(newTasks);
         addToSyncQueue({ type: 'create', payload: newTaskObject });
         setNewTask({ title: '', description: '' });
-        syncWithServer();
+        syncWithServer(); // Llama a la sincronización
     }
 
     async function toggleTaskStatus(task: Task) {
@@ -110,28 +122,29 @@ export default function Dashboard() {
         setTasks(newTasks);
         setLocalTasks(newTasks);
         addToSyncQueue({ type: 'update', payload: { _id: task._id, status: newStatus } });
-        syncWithServer();
+        syncWithServer(); // Llama a la sincronización
     }
     
     async function saveEdit(e: FormEvent) {
         e.preventDefault();
         if (!editingTask) return;
         if (!editingTask.title.trim()) { setEditingTask(null); return; }
-        const taskToUpdate = { ...editingTask, title: editingTask.title.trim(), description: editingTask.description.trim() };
+        const taskToUpdate = { ...editingTask, title: editingTask.title.trim(), description: editingTask.description ? editingTask.description.trim() : '' };
         const newTasks = tasks.map(t => t._id === taskToUpdate._id ? taskToUpdate : t);
         setTasks(newTasks);
         setLocalTasks(newTasks);
         addToSyncQueue({ type: 'update', payload: { _id: taskToUpdate._id, title: taskToUpdate.title, description: taskToUpdate.description } });
         setEditingTask(null);
-        syncWithServer();
+        syncWithServer(); // Llama a la sincronización
     }
 
     async function deleteTask(id: string) {
+        // UI optimista: marcamos como 'isDeleted' localmente para que filterTasks la oculte
         const newTasks = tasks.map(t => t._id === id ? { ...t, isDeleted: true } : t);
         setTasks(newTasks);
-        setLocalTasks(newTasks);
+        setLocalTasks(newTasks); // Actualizamos el caché local
         addToSyncQueue({ type: 'delete', payload: { _id: id } });
-        syncWithServer();
+        syncWithServer(); // Llama a la sincronización
     }
     
     function handleLogout() {
@@ -172,7 +185,7 @@ export default function Dashboard() {
                             {editingTask?._id === task._id ? (
                                 <form onSubmit={saveEdit} className="task-form-edit">
                                     <input value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })} className="task-input-edit" autoFocus />
-                                    <textarea value={editingTask.description} onChange={e => setEditingTask({ ...editingTask, description: e.target.value })} className="task-input-edit" placeholder="Descripción" />
+                                    <textarea value={editingTask.description || ''} onChange={e => setEditingTask({ ...editingTask, description: e.target.value })} className="task-input-edit" placeholder="Descripción" />
                                     <div className="task-actions">
                                         <button type="submit" className="btn btn-primary">Guardar</button>
                                         <button type="button" onClick={() => setEditingTask(null)} className="btn btn-secondary">Cancelar</button>

@@ -51,11 +51,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ message: "Formato de acciones inválido." });
     }
 
-    // --- ¡AQUÍ ESTÁ LA MAGIA! ---
     // Un mapa para almacenar los IDs temporales y los IDs reales de la BD
     const idMap = new Map<string, string>();
 
-    // 2. Procesar cada acción de la cola EN ORDEN
+    // Procesar cada acción de la cola EN ORDEN
     for (const action of actions) {
       let { type, payload } = action;
       let { _id, ...dataToUpdate } = payload; // Separa el ID del resto del payload
@@ -100,15 +99,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // 3. Devolver éxito
-    return res.status(200).json({ message: "Sincronización exitosa" });
+    // --- MODIFICACIÓN CLAVE ---
+    // 1. Después de procesar todas las acciones, busca la lista de tareas actualizada
+    const allTasks = await Task.find({ 
+      user: userId, 
+      isDeleted: false // Asegura que solo traiga las tareas no eliminadas
+    }).sort({ createdAt: -1 });
 
-  } 
-    catch (error) {
+    // 2. Devuelve la lista de tareas junto con el mensaje de éxito
+    return res.status(200).json({ 
+      message: "Sincronización exitosa",
+      tasks: allTasks // <-- Devuelve la lista actualizada
+    });
+    // --- FIN DE LA MODIFICACIÓN ---
+
+  } catch (error) {
     console.error("Error en /api/tasks/sync:", error);
 
-    // --- CORRECCIÓN AQUÍ ---
-    // Verificamos si error es una instancia de Error
     let errorMessage = "Error del servidor durante la sincronización";
     if (error instanceof Error) {
       errorMessage = error.message;
@@ -116,7 +123,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(500).json({ 
       message: "Error del servidor durante la sincronización", 
-      errorDetails: errorMessage // <-- Usamos la variable segura
+      errorDetails: errorMessage
     });
   }
 }
