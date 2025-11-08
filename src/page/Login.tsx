@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import axios from './axios';
+import axios from 'axios';
 import { api, setAuth } from "../api";
 
 export default function Login() {
