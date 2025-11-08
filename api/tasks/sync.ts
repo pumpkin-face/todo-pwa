@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import mongoose from 'mongoose';
 import Task from '../models/Task.js'; // Asegúrate de tener .js
-import User from '../models/User.js'; // Asegúrate de tener .js
 import jwt from 'jsonwebtoken';
 
 // --- Interfaz para el payload del JWT ---
