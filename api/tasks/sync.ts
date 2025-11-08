@@ -72,7 +72,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           // Creamos la tarea, ignorando el ID temporal
           const newTask = await Task.create({ 
             ...dataToUpdate, 
-            user: userId 
+            user: userId ,
+            isDeleted: false
           });
           
           // Guardamos el ID real en nuestro mapa
@@ -103,7 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // 1. Después de procesar todas las acciones, busca la lista de tareas actualizada
     const allTasks = await Task.find({ 
       user: userId, 
-      isDeleted: false // Asegura que solo traiga las tareas no eliminadas
+      isDeleted: false 
     }).sort({ createdAt: -1 });
 
     // 2. Devuelve la lista de tareas junto con el mensaje de éxito
@@ -111,7 +112,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: "Sincronización exitosa",
       tasks: allTasks // <-- Devuelve la lista actualizada
     });
-    // --- FIN DE LA MODIFICACIÓN ---
 
   } catch (error) {
     console.error("Error en /api/tasks/sync:", error);

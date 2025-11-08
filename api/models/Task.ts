@@ -5,7 +5,7 @@ export interface ITask extends Document {
   title: string;
   description: string;
   status: 'Pending' | 'Completed';
-  deleted: boolean;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,7 +20,7 @@ const taskSchema = new Schema<ITask>(
       enum: ['Pending', 'Completed'],
       default: 'Pending'
     },
-    deleted: { type: Boolean, default: false }
+    isDeleted: { type: Boolean, default: false }
   },
   {
     timestamps: true
