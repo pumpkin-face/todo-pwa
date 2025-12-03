@@ -1,9 +1,10 @@
 /* customer/src/page/Dashboard.css */
 
+/* --- Estilos Generales --- */
 .dashboard-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: 40px 20px 60px 20px;
+  padding: 40px 20px 80px 20px; /* Un poco más de espacio abajo para scroll */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,8 +14,6 @@
 
 .dashboard-header {
   width: 100%;
-  text-align: center;
-
   margin-bottom: 30px;
   display: flex;
   flex-direction: column;
@@ -26,35 +25,73 @@
   margin: 0;
   color: var(--primary-color);
   font-size: 2.5rem;
+  text-align: center;
 }
 
-.task-controls {
-  display: flex;
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap; /* Permite que bajen si no caben */
+    justify-content: center;
+}
+
+/* --- Formulario de Añadir Tarea --- */
+.add-task-form {
+  display: grid;
+  /* PC: Título (2 partes), Descripción (2 partes), Botón (1 parte) */
+  grid-template-columns: 2fr 2fr auto; 
   gap: 15px;
-  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
   background-color: #1a1a1a;
   padding: 20px;
   border-radius: 12px;
-  margin-bottom: 30px;
   border: 1px solid #333;
-  width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 30px;
 }
 
-.task-controls input,
-.task-controls select {
+.add-task-form input {
+  width: 100%;
   padding: 12px 15px;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #444;
   background-color: #222;
   color: var(--text-color);
   font-size: 1rem;
+  box-sizing: border-box;
+}
+
+/* --- Controles de Búsqueda y Filtro --- */
+.task-controls {
+  display: flex;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .task-controls input {
-  flex-grow: 1;
+  flex-grow: 1; /* Ocupa todo el espacio posible */
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #1a1a1a;
+  color: var(--text-color);
+  font-size: 1rem;
 }
 
+.task-controls select {
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background-color: #1a1a1a;
+  color: var(--text-color);
+  font-size: 1rem;
+  min-width: 140px;
+}
+
+/* --- Lista de Tareas --- */
 .task-list {
   display: flex;
   flex-direction: column;
@@ -69,10 +106,11 @@
   border-left: 5px solid #555;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  transition: all 0.3s ease;
+  align-items: center; /* Alineación vertical centrada */
+  gap: 15px;
   width: 100%;
   box-sizing: border-box;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .task-item:hover {
@@ -82,109 +120,168 @@
 
 .task-item.completed {
   border-left-color: var(--primary-color);
-  background-color: #222;
+  background-color: #151515;
+  opacity: 0.8;
 }
 
-.task-item.completed .task-title {
-  text-decoration: line-through;
-  color: var(--text-secondary-color);
+.task-item.unsynced {
+  border-left-color: orange;
+  opacity: 0.9;
 }
 
+/* Contenido de la tarea (Checkbox + Textos) */
 .task-content {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Alinea checkbox arriba si hay mucho texto */
   gap: 15px;
   flex-grow: 1;
+  overflow: hidden; /* Evita desbordamiento */
+}
+
+.task-text-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .task-content input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   cursor: pointer;
+  margin-top: 3px; /* Ajuste fino para alinear con el título */
+  flex-shrink: 0; /* Evita que el checkbox se aplaste */
 }
 
 .task-title {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  word-break: break-word; /* Rompe palabras largas */
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: #777;
 }
 
 .task-description {
   margin: 4px 0 0;
   font-size: 0.9rem;
+  color: #aaa;
+  word-break: break-word; /* Rompe palabras largas */
 }
 
+/* Botones de Acción */
+.task-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0; /* Evita que los botones se aplasten */
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+.btn-secondary {
+    background-color: #333;
+    color: white;
+}
+
+/* --- Formulario de Edición (dentro de la tarjeta) --- */
 .task-form-edit {
   display: flex;
   flex-direction: column;
   width: 100%;
   gap: 10px;
-  box-sizing: border-box;
 }
 
-.task-input-edit .task-form-edit textarea{
-  padding: 12px;
-  border-radius: 12px;
+.task-input-edit {
+  padding: 10px;
+  border-radius: 6px;
   border: 1px solid var(--primary-color);
-  background-color: #333;
-  color: var(--text-color);
-  font-size: 1.1rem;
+  background-color: #222;
+  color: white;
   width: 100%;
   box-sizing: border-box;
-}
-
-.task-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.task-actions .btn {
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  font-family: inherit;
 }
 
 .no-tasks {
   text-align: center;
-  padding: 50px;
+  padding: 40px;
   background-color: #1a1a1a;
-  border-radius: 8px;
-  color: var(--text-secondary-color);
+  border-radius: 12px;
+  color: #777;
   border: 1px dashed #444;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-.add-task-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    gap: 15px;
-    width: 100%;
-    box-sizing: border-box;
-    justify-items: center;
-    align-items: center;
-}
+/* ========================================= */
+/* DISEÑO RESPONSIVE (MÓVIL)           */
+/* ========================================= */
 
-.add-task-form input {
-  width: 100%;
-  box-sizing: border-box;
-}
+@media (max-width: 768px) {
+  
+  .dashboard-container {
+      padding: 20px 15px 80px 15px;
+  }
 
-.task-form-edit .task-actions {
-    justify-content: flex-end;
-    width: 100%;
-}
+  .dashboard-header h1 {
+      font-size: 2rem;
+  }
 
-.task-input-edit, .task-form-edit textarea {
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid var(--primary-color);
-    background-color: #333;
-    color: var(--text-color);
-    font-size: 1.1rem;
-    font-family: 'Poppins', sans-serif;
-}
+  /* Formulario de añadir: Apilar inputs verticalmente */
+  .add-task-form {
+      grid-template-columns: 1fr; /* Una sola columna */
+      gap: 10px;
+      padding: 15px;
+  }
 
-.task-item.unsynced {
-    opacity: 0.7;
-    border-left-color: orange;
+  .add-task-form button {
+      width: 100%; /* Botón ancho completo */
+      padding: 12px;
+  }
+
+  /* Controles: Buscador arriba, Filtro abajo */
+  .task-controls {
+      flex-direction: column;
+      gap: 10px;
+  }
+
+  .task-controls select {
+      width: 100%; /* Select ancho completo */
+  }
+
+  /* Tarjeta de Tarea: Apilar contenido y botones */
+  .task-item {
+      flex-direction: column; /* Cambia de fila a columna */
+      align-items: flex-start; /* Alinea todo a la izquierda */
+      padding: 15px;
+  }
+
+  .task-content {
+      width: 100%;
+      margin-bottom: 10px; /* Espacio entre texto y botones */
+  }
+
+  .task-actions {
+      width: 100%;
+      justify-content: flex-end; /* Botones a la derecha */
+      gap: 10px;
+      border-top: 1px solid #333; /* Línea separadora sutil */
+      padding-top: 10px;
+  }
+  
+  .task-actions button {
+      flex-grow: 1; /* Botones grandes y fáciles de tocar */
+      padding: 12px;
+  }
 }
