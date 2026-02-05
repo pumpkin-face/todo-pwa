@@ -18,14 +18,14 @@ function App() {
 
         <main className="hero">
           <div className="hero-content">
-            <div className="badge">✨ Nueva Versión 2.0</div>
+            <div className="badge">✨ TODO</div>
             <h1 className="hero-title">
               Organiza tu vida, <br />
               <span className="highlight">una tarea a la vez.</span>
             </h1>
             <p className="hero-subtitle">
-              Todo-PWA es tu asistente personal para gestionar tareas de forma simple,
-              rápida y accesible desde cualquier dispositivo.
+              Todo-PWA Gestor de tareas,
+              Donde quieras.
             </p>
             <div className="cta-group">
                 <Link to="/login" className="btn btn-primary">
@@ -38,10 +38,6 @@ function App() {
             </div>
           </div>
         </main>
-
-        <footer className="footer">
-          <p>&copy; 2025 Todo-PWA. Creado por David SF.</p>
-        </footer>
       </div>
     </div>
   );
